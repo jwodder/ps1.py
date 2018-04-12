@@ -138,6 +138,62 @@ class GitState(Enum):
 
 
 def git_status():
+    """
+    If the current directory is in a Git repository, ``git_status()`` returns
+    an object with the following attributes:
+
+    :var head: a description of the repository's ``HEAD``: either the name of
+        the current branch (if any), or the name of the currently checked-out
+        tag (if any), or the short form of the current commit hash
+    :vartype head: str
+
+    :var detached: `True` iff the repository is in detached ``HEAD`` state
+    :vartype detached: bool
+
+    :var ahead: the number of commits by which ``HEAD`` is ahead of
+        ``@{upstream}``, or `None` if there is no upstream
+    :vartype ahead: int or None
+
+    :var behind: the number of commits by which ``HEAD`` is behind
+        ``@{upstream}``, or `None` if there is no upstream
+    :vartype behind: int or None
+
+    :var bare: `True` iff the repository is a bare repository
+    :vartype bare: bool
+
+    The following attributes are only present when ``bare`` is `False`:
+
+    :var stashed: `True` iff there are any stashed changes
+    :vartype stashed: bool
+
+    :var staged: `True` iff there are changes staged to be committed
+    :vartype staged: bool
+
+    :var unstaged: `True` iff there are unstaged changes in the working tree
+    :vartype unstaged: bool
+
+    :var untracked: `True` iff there are untracked files in the working tree
+    :vartype untracked: bool
+
+    :var conflict: `True` iff there are any paths in the working tree with
+        merge conflicts
+    :vartype conflict: bool
+
+    :var state: the current state of the working tree, or `None` if there are
+        no rebases/bisections/etc. currently in progress
+    :vartype state: GitState or None
+
+    :var rebase_head: the name of the original branch when rebasing?
+    :vartype rebase_head: str or None
+
+    :var progress: when rebasing, the current progress as a ``(current, total)``
+        pair
+    :vartype progress: tuple(int, int) or None
+
+    If the current directory is *not* in a Git repository, ``git_status()``
+    returns `None`.
+    """
+
     git_dir = git('rev-parse', '--git-dir')
     if git_dir is None:
         return None
@@ -184,8 +240,10 @@ def git_status():
                 )?\s*
             ''', line, flags=re.X)
             if m:
-                gs.ahead  = m.group('ahead')
-                gs.behind = m.group('behind')
+                if m.group('ahead') is not None:
+                    gs.ahead  = int(m.group('ahead'))
+                if m.group('behind') is not None:
+                    gs.behind = int(m.group('behind'))
         elif line.startswith('??'):
             gs.untracked = True
         elif not line.startswith('!!'):
