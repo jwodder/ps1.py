@@ -1,11 +1,4 @@
 #!/usr/bin/python3
-# TODO:
-# - Automatically shorten the prompt if it gets too long
-# - Escape backslashes in $USER, $HOSTNAME, $PWD, branch names, etc.
-# - Add a command-line option for removing `\[ ... \]` escapes?
-# - When rebasing in Git, show rebase head and/or progress?
-# - Show relative location when bisecting commits?
-# - Set the terminal title? ("\[\e]0;$TITLE\a\]")
 from   enum       import Enum
 import os
 from   pathlib    import Path, PurePath
@@ -83,6 +76,12 @@ def main():
                 PS1 += red('!', bold=True)
 
     PS1 += '$ '
+
+    # If your terminal emulator supports it, it's also possible to set the
+    # title of the terminal window by emitting "\[\e]0;$TITLE\a\]" somewhere in
+    # the prompt.  Here's an example that sets the title to `username@host`:
+    #PS1 += r'\[\033]0;{}@{}\a\]'.format(os.getlogin(), socket.gethostname())
+
     #print(PS1.replace(r'\[', '').replace(r'\]', ''))
     print(PS1)
 
