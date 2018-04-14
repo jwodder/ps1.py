@@ -11,8 +11,14 @@ from   types      import SimpleNamespace
 MAX_CWD_LEN = 30
 
 def colorer(c):
+    r"""
+    Returns a function ``func(txt, bold=False)`` that uses ANSI escape
+    sequences to color the string ``txt`` as color number ``c`` (and also as
+    bold if ``bold`` is true).  The escape sequences are wrapped in ``\[ ...
+    \]`` so that the result is usable in a bash ``PS1`` value.
+    """
     return lambda txt, bold=False: \
-        r'\[\033[{}{}m\]{}\[\033[0m\]'.format(c, ';1' if bold else '', txt)
+        '\\[\033[{}{}m\\]{}\\[\033[0m\\]'.format(c, ';1' if bold else '', txt)
 
 red     = colorer(31)
 green   = colorer(32)
@@ -80,12 +86,17 @@ def main():
     # If your terminal emulator supports it, it's also possible to set the
     # title of the terminal window by emitting "\[\e]0;$TITLE\a\]" somewhere in
     # the prompt.  Here's an example that sets the title to `username@host`:
-    #PS1 += r'\[\033]0;{}@{}\a\]'.format(os.getlogin(), socket.gethostname())
+    #PS1 += '\\[\033]0;{}@{}\a\\]'.format(os.getlogin(), socket.gethostname())
 
     #print(PS1.replace(r'\[', '').replace(r'\]', ''))
     print(PS1)
 
 def cwdstr():
+    """
+    Show the path to the current working directory.  If the directory is at or
+    under :envvar:`HOME`, the path will start with ``~/``.  The path will also
+    be truncated to be no more than `MAX_CWD_LEN` characters long.
+    """
     # Prefer $PWD to os.getcwd() as the former does not resolve symlinks
     cwd = Path(os.environ.get('PWD') or os.getcwd())
     try:
@@ -96,6 +107,10 @@ def cwdstr():
 
 def shortpath(p: PurePath, max_len=MAX_CWD_LEN):
     """
+    If the filepath ``p`` is too long (long than ``max_len``), cut off leading
+    components to make it fit; if that's not enough, also truncate the final
+    component.  Deleted bits are replaced with ellipses.
+
     >>> shortpath(PurePath('/'))
     '/'
     >>> shortpath(PurePath('~'))
@@ -128,6 +143,11 @@ def shortpath(p: PurePath, max_len=MAX_CWD_LEN):
 
 
 class GitState(Enum):
+    """
+    Represents the various "in progress" states that a Git repository can be
+    in.  The value of each enumeration is a short string for displaying in a
+    command prompt.
+    """
     REBASE_MERGING  = 'REBAS'
     REBASE_APPLYING = 'REBAS'
     MERGING         = 'MERGE'
@@ -286,6 +306,10 @@ def git_status():
 
 
 def git(*args):
+    """
+    Run a Git command (suppressing stderr) and return its stdout with leading &
+    trailing whitespace stripped.  If the command fails, return `None`.
+    """
     try:
         return check_output(
             ('git',) + args,
@@ -295,7 +319,11 @@ def git(*args):
     except CalledProcessError:
         return None
 
-def cat(path):
+def cat(path: Path):
+    """
+    Return the contents of the given file with leading & trailing whitespace
+    stripped.  If the file does not exist, return `None`.
+    """
     try:
         return path.read_text().strip()
     except FileNotFoundError:
