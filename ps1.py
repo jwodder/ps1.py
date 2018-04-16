@@ -247,6 +247,10 @@ def git_status():
 
     If the current directory is *not* in a Git repository, ``git_status()``
     returns `None`.
+
+    This function is based on a combination of Git's ``git-prompt.sh``
+    <https://git.io/qD0ykw> and magicmonty's bash-git-prompt
+    <https://git.io/v5HSP>.
     """
 
     git_dir = git('rev-parse', '--git-dir')
@@ -279,7 +283,6 @@ def git_status():
     gs.unstaged  = False
     gs.untracked = False
     gs.conflict  = False
-    # Based on <https://git.io/v5HSP>:
     for line in git('status', '--porcelain', '--branch').splitlines():
         if line.startswith('##'):
             m = re.fullmatch(r'''
