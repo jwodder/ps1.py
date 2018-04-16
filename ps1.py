@@ -8,6 +8,7 @@ from   subprocess import CalledProcessError, DEVNULL, check_output
 import sys
 from   types      import SimpleNamespace
 
+#: Default maximum display length of the path to the current working directory
 MAX_CWD_LEN = 30
 
 def colorer(c):
@@ -35,52 +36,86 @@ light_magenta = colorer(95)
 light_cyan    = colorer(96)
 
 def main():
+    # The beginning of the prompt string:
     PS1 = ''
 
+    # If the $MAIL file is nonempty, show the string "[MAIL]":
     try:
         if Path(os.environ['MAIL']).stat().st_size > 0:
             PS1 += cyan('[MAIL] ', bold=True)
     except (KeyError, FileNotFoundError):
         pass
 
-    debian_chroot = Path('/etc/debian_chroot')
-    if debian_chroot.is_file():
-        PS1 += blue('[{}] '.format(cat(debian_chroot), bold=True))
+    # Show the chroot we're working in (if any):
+    debian_chroot = cat(Path('/etc/debian_chroot'))
+    if debian_chroot:
+        PS1 += blue('[{}] '.format(debian_chroot), bold=True)
 
+    # If we're inside a Python virtualenv, show the basename of the virtualenv
+    # directory.  (Note: As of virtualenv v15.1.0, we can't support custom
+    # virtualenv prompt prefixes, as virtualenv does not export the relevant
+    # information to the environment.)
     if 'VIRTUAL_ENV' in os.environ:
-        # As of v15.1.0, virtualenv does not export the relevant information
-        # for custom prompt prefixes.
         PS1 += '({0.name}) '.format(Path(os.environ['VIRTUAL_ENV']))
 
-    #PS1 += light_green(os.getlogin()) + '@'
-    PS1 += light_red(socket.gethostname()) + ':' + light_cyan(cwdstr())
+    # Show the username of the current user.  I know who I am, so I don't need
+    # to see this, but the code is left in here as an example in case you want
+    # to enable it.
+    #PS1 += light_green(os.getlogin())
 
+    # Separator:
+    #PS1 += '@'
+
+    # Show the current hostname:
+    PS1 += light_red(socket.gethostname())
+
+    # Separator:
+    PS1 += ':'
+
+    # Show the path to the current working directory:
+    PS1 += light_cyan(cwdstr())
+
+    # If we're in a Git repository, show its status.  This can be disabled
+    # (e.g., in case of breakage or slowness) by passing "off" as the script's
+    # first argument.
     gs = git_status() if sys.argv[1:2] != ["off"] else None
     if gs is not None:
+        # Separator:
         PS1 += '@'
         if not gs.bare and gs.stashed:
+            # We have stashed changes:
             PS1 += light_yellow('+', bold=True)
+        # Show HEAD; color changes depending on whether it's detached:
         PS1 += (light_blue if gs.detached else light_green)(gs.head)
         if gs.ahead:
+            # Show commits ahead of upstream:
             PS1 += green('+{}'.format(gs.ahead))
             if gs.behind:
+                # Ahead/behind separator:
                 PS1 += ','
         if gs.behind:
+            # Show commits behind upstream:
             PS1 += red('-{}'.format(gs.behind))
         if not gs.bare:
+            # Show staged/unstaged status:
             if gs.staged and gs.unstaged:
                 PS1 += light_yellow('*', bold=True)
             elif gs.staged:
                 PS1 += green('*')
             elif gs.unstaged:
                 PS1 += red('*')
+            #else: Show nothing
             if gs.untracked:
+                # There are untracked files:
                 PS1 += red('+', bold=True)
             if gs.state is not None:
+                # The repository is in the middle of something special:
                 PS1 += magenta('[' + gs.state.value + ']')
             if gs.conflict:
+                # There are conflicted files:
                 PS1 += red('!', bold=True)
 
+    # The traditional sh prompt at the end of the prompt:
     PS1 += '$ '
 
     # If your terminal emulator supports it, it's also possible to set the
@@ -88,8 +123,9 @@ def main():
     # the prompt.  Here's an example that sets the title to `username@host`:
     #PS1 += '\\[\033]0;{}@{}\a\\]'.format(os.getlogin(), socket.gethostname())
 
-    #print(PS1.replace(r'\[', '').replace(r'\]', ''))
+    # Print the whole prompt string:
     print(PS1)
+
 
 def cwdstr():
     """
