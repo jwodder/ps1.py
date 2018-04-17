@@ -187,7 +187,7 @@ class GitState(Enum):
     REBASE_MERGING  = 'REBAS'
     REBASE_APPLYING = 'REBAS'
     MERGING         = 'MERGE'
-    CHERRY_PICKING  = 'CHPCK'
+    CHERRY_PICKING  = 'CHYPK'
     REVERTING       = 'REVRT'
     BISECTING       = 'BSECT'
 
