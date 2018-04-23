@@ -1,8 +1,42 @@
 Here we have yet another script for Git-aware customization of the bash command
 prompt.  Unlike all the other scripts, I wrote this one, so it's better.
 
-<!-- example screenshots -->
-<!-- list of features (mail, shortening pwd name, well documented?, etc.) -->
+Features:
+
+- lets you know if you have mail in `$MAIL`
+- shows chroot and [virtualenv](https://virtualenv.pypa.io) prompt prefixes
+- automatically truncates the current directory path if it gets too long
+- shows the status of the current Git repository (see below)
+- thoroughly documented and easily customizable
+
+
+Requirements
+============
+
+* Python 3, version 3.5 or higher
+* Git
+* bash
+
+
+Installation
+============
+
+1. Save `ps1.py` to your computer somewhere (I put my copy at `~/share/ps1.py`)
+
+2. Add the following line to the end of your `~/.bashrc`:
+
+        PROMPT_COMMAND="$PROMPT_COMMAND"'; PS1="$(python3 ~/share/ps1.py "${PS1_GIT:-}")"'
+
+    Replace `~/share/ps1.py` with the location you saved `ps1.py` at as
+    appropriate.
+
+3. Open a new shell
+
+4. Enjoy!
+
+5. If the Git integration causes you trouble (either because something breaks
+   or just because it's taking too long to run), it can be temporarily disabled
+   by setting `PS1_GIT=off` in bash.
 
 
 Git Status Symbols
@@ -35,32 +69,3 @@ relevant.  From left to right, the symbols are:
     - `[REBAS]` — rebasing
     - `[REVRT]` — reverting
 - `!` (bold red) — Indicates there are paths with merge conflicts
-
-
-Requirements
-============
-
-* Python 3, version 3.5 or higher
-* Git
-* bash
-
-
-Installation
-============
-
-1. Save `ps1.py` to your computer somewhere (I put my copy at `~/share/ps1.py`)
-
-2. Add the following line to the end of your `~/.bashrc`:
-
-        PROMPT_COMMAND="$PROMPT_COMMAND"'; PS1="$(python3 ~/share/ps1.py "${PS1_GIT:-}")"'
-
-    Replace `~/share/ps1.py` with the location you saved `ps1.py` at as
-    appropriate.
-
-3. Open a new shell
-
-4. Enjoy!
-
-5. If the Git integration causes you trouble (either because something breaks
-   or just because it's taking too long to run), it can be temporarily disabled
-   by setting `PS1_GIT=off` in bash.
