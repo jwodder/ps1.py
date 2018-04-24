@@ -1,6 +1,8 @@
 Here we have yet another script for Git-aware customization of the bash command
 prompt.  Unlike all the other scripts, I wrote this one, so it's better.
 
+![](screenshot.png)
+
 Features:
 
 - lets you know if you have mail in `$MAIL`
