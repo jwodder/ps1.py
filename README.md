@@ -23,7 +23,8 @@ Requirements
 Installation
 ============
 
-1. Save `ps1.py` to your computer somewhere (I put my copy at `~/share/ps1.py`)
+1. Save [`ps1.py`](ps1.py) to your computer somewhere (I put my copy at
+   `~/share/ps1.py`)
 
 2. Add the following line to the end of your `~/.bashrc`:
 
