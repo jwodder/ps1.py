@@ -16,7 +16,7 @@ Requirements
 ============
 
 * Python 3, version 3.5 or higher
-* Git
+* Git, version 1.7.10 or higher
 * bash
 
 
