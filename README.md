@@ -28,7 +28,7 @@ Installation
 
 2. Add the following line to the end of your `~/.bashrc`:
 
-        PROMPT_COMMAND="$PROMPT_COMMAND"'; PS1="$(python3 ~/share/ps1.py "${PS1_GIT:-}")"'
+        PROMPT_COMMAND="$PROMPT_COMMAND"'; PS1="$(/usr/bin/python3 ~/share/ps1.py "${PS1_GIT:-}")"'
 
     Replace `~/share/ps1.py` with the location you saved `ps1.py` at as
     appropriate.
