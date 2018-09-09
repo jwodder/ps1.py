@@ -20,8 +20,8 @@ Requirements
 * bash
 
 
-Installation
-============
+Installation & Usage
+====================
 
 1. Save [`ps1.py`](ps1.py) to your computer somewhere (I put my copy at
    `~/share/ps1.py`)
@@ -30,7 +30,8 @@ Installation
 
         PROMPT_COMMAND="$PROMPT_COMMAND"'; PS1="$(/usr/bin/python3 ~/share/ps1.py "${PS1_GIT:-}")"'
 
-    Replace `~/share/ps1.py` with the location you saved `ps1.py` at as
+    Replace `/usr/bin/python3` with the path to your Python 3 interpreter, and
+    replace `~/share/ps1.py` with the location you saved `ps1.py` at as
     appropriate.
 
 3. Open a new shell
@@ -39,7 +40,7 @@ Installation
 
 5. If the Git integration causes you trouble (either because something breaks
    or just because it's taking too long to run), it can be temporarily disabled
-   by setting `PS1_GIT=off` in bash.
+   by running `PS1_GIT=off` in bash.
 
 
 Git Status Symbols
@@ -62,7 +63,7 @@ relevant.  From left to right, the symbols are:
   working tree:
     - Green: There are staged changes
     - Red: There are unstaged changes
-    - Light yellow: There are both staged and unstaged changes
+    - Bold light yellow: There are both staged and unstaged changes
 - `+` (bold red) — Indicates there are untracked files in the working tree
 - `[STATE]` (magenta) — Shows what activity Git is currently in the middle of,
   if any:
