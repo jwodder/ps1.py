@@ -183,9 +183,9 @@ def cwdstr():
 
 def shortpath(p: PurePath, max_len=MAX_CWD_LEN):
     """
-    If the filepath ``p`` is too long (long than ``max_len``), cut off leading
-    components to make it fit; if that's not enough, also truncate the final
-    component.  Deleted bits are replaced with ellipses.
+    If the filepath ``p`` is too long (longer than ``max_len``), cut off
+    leading components to make it fit; if that's not enough, also truncate the
+    final component.  Deleted bits are replaced with ellipses.
 
     >>> shortpath(PurePath('/'))
     '/'
