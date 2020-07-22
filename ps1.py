@@ -39,6 +39,7 @@ Installation & Usage
    by running ``PS1_GIT=off`` in bash.
 """
 
+import argparse
 from   enum       import Enum
 import os
 from   pathlib    import Path, PurePath
@@ -51,69 +52,150 @@ from   types      import SimpleNamespace
 #: Default maximum display length of the path to the current working directory
 MAX_CWD_LEN = 30
 
-def colorer(c):
-    r"""
-    Returns a function ``func(txt, bold=False)`` that uses ANSI escape
-    sequences to color the string ``txt`` as color number ``c`` (and also as
-    bold if ``bold`` is true).  The escape sequences are wrapped in ``\[ ...
-    \]`` so that the result is usable in a bash ``PS1`` value.
+class Color(Enum):
     """
-    return lambda txt, bold=False: \
-        '\\[\033[{}{}m\\]{}\\[\033[0m\\]'.format(c, ';1' if bold else '', txt)
+    An enum of the supported foreground colors.  Each color's value equals the
+    ANSI SGR parameter for setting that color as the foreground color.
+    """
 
-red     = colorer(31)
-green   = colorer(32)
-yellow  = colorer(33)
-blue    = colorer(34)
-magenta = colorer(35)
-cyan    = colorer(36)
+    RED           = 31
+    GREEN         = 32
+    YELLOW        = 33
+    BLUE          = 34
+    MAGENTA       = 35
+    CYAN          = 36
+    LIGHT_RED     = 91
+    LIGHT_GREEN   = 92
+    LIGHT_YELLOW  = 93
+    LIGHT_BLUE    = 94
+    LIGHT_MAGENTA = 95
+    LIGHT_CYAN    = 96
 
-light_red     = colorer(91)
-light_green   = colorer(92)
-light_yellow  = colorer(93)
-light_blue    = colorer(94)
-light_magenta = colorer(95)
-light_cyan    = colorer(96)
+
+class BashStyler:
+    """ Class for escaping & styling strings for use in Bash's PS1 variable """
+
+    #: The actual prompt symbol to add at the end of the output, just before a
+    #: final space character
+    prompt_suffix = r'\$'
+
+    def __call__(self, s, fg=None, bold=False):
+        r"""
+        Return the string ``s`` escaped for use in a PS1 variable.  If ``fg``
+        is non-`None`, the string will be wrapped in the proper escape
+        sequences to display it as the given foreground color.  If ``bold`` is
+        true, the string will be wrapped in the proper escape sequences to
+        display it bold.  All escape sequences are wrapped in ``\[ ... \]`` so
+        that they may be used in a PS1 variable.
+
+        :param str s: the string to stylize
+        :param Color fg: the foreground color to stylize the string with
+        :param bool bold: whether to stylize the string as bold
+        """
+        s = self.escape(s)
+        if fg is not None:
+            s = r'\[\e[{}{}m\]{}\[\e[0m\]'.format(
+                fg.value,
+                ';1' if bold else '',
+                s,
+            )
+        elif bold:
+            s = r'\[\e[1m\]{}\[\e[0m\]'.format(s)
+        return s
+
+    def escape(self, s):
+        """
+        Escape characters in the string ``s`` that have special meaning in a
+        PS1 variable
+        """
+        return s.replace('\\', r'\\')
+
+
+class ANSIStyler:
+    """ Class for styling strings for display immediately in the terminal """
+
+    #: The actual prompt symbol to add at the end of the output, just before a
+    #: final space character
+    prompt_suffix = '$'
+
+    def __call__(self, s, fg=None, bold=False):
+        r"""
+        Stylize the string ``s`` with ANSI escape sequences.  If ``fg`` is
+        non-`None`, the string will be stylized with the given foreground
+        color.  If ``bold`` is true, the string will be stylized bold.
+
+        :param str s: the string to stylize
+        :param Color fg: the foreground color to stylize the string with
+        :param bool bold: whether to stylize the string as bold
+        """
+        if fg is not None:
+            s = '\033[{}{}m{}\033[0m'.format(fg.value, ';1' if bold else '', s)
+        elif bold:
+            s = '\033[1m{}\033[0m'.format(s)
+        return s
+
 
 def main():
+    parser = argparse.ArgumentParser(
+        description='Yet another bash prompt script'
+    )
+    parser.add_argument(
+        '--ansi',
+        action = 'store_const',
+        dest   = 'stylecls',
+        const  = ANSIStyler,
+        help   = 'Format prompt for direct display',
+    )
+    parser.add_argument(
+        '--bash',
+        action = 'store_const',
+        dest   = 'stylecls',
+        const  = BashStyler,
+        help   = "Format prompt for Bash's PS1 (default)",
+    )
+    args = parser.parse_args()
+
+    # Stylizing & escaping callable:
+    style = (args.stylecls or BashStyler)()
+
     # The beginning of the prompt string:
     PS1 = ''
 
     # If the $MAIL file is nonempty, show the string "[MAIL]":
     try:
         if Path(os.environ['MAIL']).stat().st_size > 0:
-            PS1 += cyan('[MAIL] ', bold=True)
+            PS1 += style('[MAIL] ', fg=Color.CYAN, bold=True)
     except (KeyError, FileNotFoundError):
         pass
 
     # Show the chroot we're working in (if any):
     debian_chroot = cat(Path('/etc/debian_chroot'))
     if debian_chroot:
-        PS1 += blue('[{}] '.format(debian_chroot), bold=True)
+        PS1 += style('[{}] '.format(debian_chroot), fg=Color.BLUE, bold=True)
 
     # If we're inside a Python virtualenv, show the basename of the virtualenv
-    # directory.  (Note: As of virtualenv v15.1.0, we can't support custom
+    # directory.  (Note: As of virtualenv v20.0.27, we can't support custom
     # virtualenv prompt prefixes, as virtualenv does not export the relevant
     # information to the environment.)
     if 'VIRTUAL_ENV' in os.environ:
-        PS1 += '({0.name}) '.format(Path(os.environ['VIRTUAL_ENV']))
+        PS1 += style('({0.name}) '.format(Path(os.environ['VIRTUAL_ENV'])))
 
     # Show the username of the current user.  I know who I am, so I don't need
     # to see this, but the code is left in here as an example in case you want
     # to enable it.
-    #PS1 += light_green(os.getlogin())
+    #PS1 += style(os.getlogin(), fg=Color.LIGHT_GREEN)
 
     # Separator:
-    #PS1 += '@'
+    #PS1 += style('@')
 
     # Show the current hostname:
-    PS1 += light_red(socket.gethostname())
+    PS1 += style(socket.gethostname(), fg=Color.LIGHT_RED)
 
     # Separator:
-    PS1 += ':'
+    PS1 += style(':')
 
     # Show the path to the current working directory:
-    PS1 += light_cyan(cwdstr())
+    PS1 += style(cwdstr(), fg=Color.LIGHT_CYAN)
 
     # If we're in a Git repository, show its status.  This can be disabled
     # (e.g., in case of breakage or slowness) by passing "off" as the script's
@@ -121,47 +203,48 @@ def main():
     gs = git_status() if sys.argv[1:2] != ["off"] else None
     if gs is not None:
         # Separator:
-        PS1 += '@'
+        PS1 += style('@')
         if not gs.bare and gs.stashed:
             # We have stashed changes:
-            PS1 += light_yellow('+', bold=True)
+            PS1 += style('+', fg=Color.LIGHT_YELLOW, bold=True)
         # Show HEAD; color changes depending on whether it's detached:
-        PS1 += (light_blue if gs.detached else light_green)(gs.head)
+        head_color = Color.LIGHT_BLUE if gs.detached else Color.LIGHT_GREEN
+        PS1 += style(gs.head, fg=head_color)
         if gs.ahead:
             # Show commits ahead of upstream:
-            PS1 += green('+{}'.format(gs.ahead))
+            PS1 += style('+{}'.format(gs.ahead), fg=Color.GREEN)
             if gs.behind:
                 # Ahead/behind separator:
-                PS1 += ','
+                PS1 += style(',')
         if gs.behind:
             # Show commits behind upstream:
-            PS1 += red('-{}'.format(gs.behind))
+            PS1 += style('-{}'.format(gs.behind), fg=Color.RED)
         if not gs.bare:
             # Show staged/unstaged status:
             if gs.staged and gs.unstaged:
-                PS1 += light_yellow('*', bold=True)
+                PS1 += style('*', fg=Color.LIGHT_YELLOW, bold=True)
             elif gs.staged:
-                PS1 += green('*')
+                PS1 += style('*', fg=Color.GREEN)
             elif gs.unstaged:
-                PS1 += red('*')
+                PS1 += style('*', fg=Color.RED)
             #else: Show nothing
             if gs.untracked:
                 # There are untracked files:
-                PS1 += red('+', bold=True)
+                PS1 += style('+', fg=Color.RED, bold=True)
             if gs.state is not None:
                 # The repository is in the middle of something special:
-                PS1 += magenta('[' + gs.state.value + ']')
+                PS1 += style('[' + gs.state.value + ']', fg=Color.MAGENTA)
             if gs.conflict:
                 # There are conflicted files:
-                PS1 += red('!', bold=True)
+                PS1 += style('!', fg=Color.RED, bold=True)
 
-    # The traditional sh prompt at the end of the prompt:
-    PS1 += '$ '
+    # The actual prompt symbol at the end of the prompt:
+    PS1 += style.prompt_suffix + ' '
 
     # If your terminal emulator supports it, it's also possible to set the
     # title of the terminal window by emitting "\[\e]0;$TITLE\a\]" somewhere in
     # the prompt.  Here's an example that sets the title to `username@host`:
-    #PS1 += '\\[\033]0;{}@{}\a\\]'.format(os.getlogin(), socket.gethostname())
+    #PS1 += r'\[\e]0;{}@{}\a\]'.format(os.getlogin(), socket.gethostname())
 
     # Print the whole prompt string:
     print(PS1)
