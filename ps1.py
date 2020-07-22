@@ -39,6 +39,12 @@ Installation & Usage
    by running ``PS1_GIT=off`` in bash.
 """
 
+__version__      = '0.2.0.dev1'
+__author__       = 'John T. Wodder II'
+__author_email__ = 'ps1@varonathe.org'
+__license__      = 'MIT'
+__url__          = 'https://github.com/jwodder/ps1.py'
+
 import argparse
 from   enum       import Enum
 import os
@@ -151,6 +157,11 @@ def main():
         dest   = 'stylecls',
         const  = BashStyler,
         help   = "Format prompt for Bash's PS1 (default)",
+    )
+    parser.add_argument(
+        '-V', '--version',
+        action  = 'version',
+        version = f'%(prog)s {__version__}',
     )
     parser.add_argument(
         'git_flag',
