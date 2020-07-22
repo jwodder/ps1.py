@@ -1,17 +1,19 @@
 #!/usr/bin/python3
 """
-Yet another bash prompt script
+Yet another bash/zsh prompt script
 
-Here we have yet another script for Git-aware customization of the bash command
-prompt.  Unlike all the other scripts, I wrote this one, so it's better.
+Here we have yet another script for Git-aware customization of the command
+prompt in Bash and zsh.  Unlike all the other scripts, I wrote this one, so
+it's better.
 
 Features:
 
 - lets you know if you have mail in ``$MAIL``
 - shows chroot and `virtualenv <https://virtualenv.pypa.io>`_ prompt prefixes
 - automatically truncates the current directory path if it gets too long
-- shows the status of the current Git repository (see below)
+- shows the status of the current Git repository
 - thoroughly documented and easily customizable
+- supports both Bash and zsh
 
 Visit <https://github.com/jwodder/ps1.py> for more information.
 
@@ -22,13 +24,22 @@ Installation & Usage
 1. Save this script to your computer somewhere (I put my copy at
    ``~/share/ps1.py``)
 
-2. Add the following line to the end of your ``~/.bashrc``::
+2. If using Bash, add the following line to the end of your ``~/.bashrc``:
+
+   .. code:: shell
 
         PROMPT_COMMAND="$PROMPT_COMMAND"'; PS1="$(/usr/bin/python3 ~/share/ps1.py "${PS1_GIT:-}")"'
 
-    Replace ``/usr/bin/python3`` with the path to your Python 3 interpreter,
-    and replace ``~/share/ps1.py`` with the location you saved ``ps1.py`` at as
-    appropriate.
+   If using zsh, add the following to the end of your ``~/.zshrc``:
+
+   .. code:: shell
+
+        precmd_ps1_py() { PS1="$(/usr/bin/python3 ~/share/ps1.py --zsh "${PS1_GIT:-}")" }
+        precmd_functions+=( precmd_ps1_py )
+
+   Replace ``/usr/bin/python3`` with the path to your Python 3 interpreter, and
+   replace ``~/share/ps1.py`` with the location you saved ``ps1.py`` at as
+   appropriate.
 
 3. Open a new shell
 
@@ -36,7 +47,7 @@ Installation & Usage
 
 5. If the Git integration causes you trouble (either because something breaks
    or just because it's taking too long to run), it can be temporarily disabled
-   by running ``PS1_GIT=off`` in bash.
+   by running ``PS1_GIT=off`` on the command line.
 """
 
 __version__      = '0.2.0.dev1'
@@ -59,22 +70,30 @@ MAX_CWD_LEN = 30
 
 class Color(Enum):
     """
-    An enum of the supported foreground colors.  Each color's value equals the
-    ANSI SGR parameter for setting that color as the foreground color.
+    An enum of the supported foreground colors.  Each color's value equals its
+    xterm number.
     """
 
-    RED           = 31
-    GREEN         = 32
-    YELLOW        = 33
-    BLUE          = 34
-    MAGENTA       = 35
-    CYAN          = 36
-    LIGHT_RED     = 91
-    LIGHT_GREEN   = 92
-    LIGHT_YELLOW  = 93
-    LIGHT_BLUE    = 94
-    LIGHT_MAGENTA = 95
-    LIGHT_CYAN    = 96
+    RED           = 1
+    GREEN         = 2
+    YELLOW        = 3
+    BLUE          = 4
+    MAGENTA       = 5
+    CYAN          = 6
+    LIGHT_RED     = 9
+    LIGHT_GREEN   = 10
+    LIGHT_YELLOW  = 11
+    LIGHT_BLUE    = 12
+    LIGHT_MAGENTA = 13
+    LIGHT_CYAN    = 14
+
+    def asfg(self):
+        """
+        Return the ANSI SGR parameter for setting the color as the foreground
+        color
+        """
+        c = self.value
+        return c + 30 if c < 8 else c + 82
 
 
 class BashStyler:
@@ -100,7 +119,7 @@ class BashStyler:
         s = self.escape(s)
         if fg is not None:
             s = r'\[\e[{}{}m\]{}\[\e[0m\]'.format(
-                fg.value,
+                fg.asfg(),
                 ';1' if bold else '',
                 s,
             )
@@ -134,15 +153,45 @@ class ANSIStyler:
         :param bool bold: whether to stylize the string as bold
         """
         if fg is not None:
-            s = '\033[{}{}m{}\033[0m'.format(fg.value, ';1' if bold else '', s)
+            s = '\033[{}{}m{}\033[0m'.format(fg.asfg(), ';1' if bold else '', s)
         elif bold:
             s = '\033[1m{}\033[0m'.format(s)
         return s
 
 
+class ZshStyler:
+    """ Class for escaping & styling strings for use in zsh's PS1 variable """
+
+    #: The actual prompt symbol to add at the end of the output, just before a
+    #: final space character
+    prompt_suffix = '%#'
+
+    def __call__(self, s, fg=None, bold=False):
+        """
+        Return the string ``s`` escaped for use in a zsh PS1 variable.  If
+        ``fg`` is non-`None`, the string will be wrapped in the proper escape
+        sequences to display it as the given foreground color.  If ``bold`` is
+        true, the string will be wrapped in the proper escape sequences to
+        display it bold.
+
+        :param str s: the string to stylize
+        :param Color fg: the foreground color to stylize the string with
+        :param bool bold: whether to stylize the string as bold
+        """
+        s = self.escape(s)
+        if bold:
+            s = '%B{}%b'.format(s)
+        if fg is not None:
+            s = '%F{{{}}}{}%f'.format(fg.value, s)
+        return s
+
+    def escape(self, s):
+        return s.replace('%', '%%')
+
+
 def main():
     parser = argparse.ArgumentParser(
-        description='Yet another bash prompt script.  '
+        description='Yet another bash/zsh prompt script.  '
                     f'Visit <{__url__}> for more information.'
     )
     parser.add_argument(
@@ -158,6 +207,13 @@ def main():
         dest   = 'stylecls',
         const  = BashStyler,
         help   = "Format prompt for Bash's PS1 (default)",
+    )
+    parser.add_argument(
+        '--zsh',
+        action = 'store_const',
+        dest   = 'stylecls',
+        const  = ZshStyler,
+        help   = "Format prompt for zsh's PS1",
     )
     parser.add_argument(
         '-V', '--version',
