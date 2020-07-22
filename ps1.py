@@ -46,7 +46,6 @@ from   pathlib    import Path, PurePath
 import re
 import socket
 from   subprocess import CalledProcessError, DEVNULL, check_output
-import sys
 from   types      import SimpleNamespace
 
 #: Default maximum display length of the path to the current working directory
@@ -153,6 +152,11 @@ def main():
         const  = BashStyler,
         help   = "Format prompt for Bash's PS1 (default)",
     )
+    parser.add_argument(
+        'git_flag',
+        nargs = '?',
+        help  = 'Set to "off" to disable Git integration'
+    )
     args = parser.parse_args()
 
     # Stylizing & escaping callable:
@@ -200,7 +204,7 @@ def main():
     # If we're in a Git repository, show its status.  This can be disabled
     # (e.g., in case of breakage or slowness) by passing "off" as the script's
     # first argument.
-    gs = git_status() if sys.argv[1:2] != ["off"] else None
+    gs = git_status() if args.git_flag != "off" else None
     if gs is not None:
         # Separator:
         PS1 += style('@')
