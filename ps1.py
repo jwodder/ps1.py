@@ -142,7 +142,8 @@ class ANSIStyler:
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Yet another bash prompt script'
+        description='Yet another bash prompt script.  '
+                    f'Visit <{__url__}> for more information.'
     )
     parser.add_argument(
         '--ansi',
