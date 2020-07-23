@@ -6,6 +6,7 @@ v0.2.0 (in development)
 - Added version, author, etc. variables to the top of the file
 - Added a `--version` option
 - Added support for zsh
+- Added a `-G`, `--git-only` option for only outputting the Git status string
 
 v0.1.0 (2018-09-09)
 -------------------

@@ -14,6 +14,8 @@ Features:
 - shows the status of the current Git repository
 - thoroughly documented and easily customizable
 - supports both Bash and zsh
+- can optionally output just the Git status, in case you want to combine it
+  with your own prompt string
 
 Visit <https://github.com/jwodder/ps1.py> for more information.
 
@@ -36,6 +38,11 @@ Installation & Usage
 
         precmd_ps1_py() { PS1="$(/usr/bin/python3 ~/share/ps1.py --zsh "${PS1_GIT:-}")" }
         precmd_functions+=( precmd_ps1_py )
+
+   If you want to use just the Git status portion of the script's output and
+   combine it with your own prompt string, replace the ``PS1`` assignment with
+   your desired prompt, with ``$(/usr/bin/python3 ~/share/ps1.py --git-only
+   "${PS1_GIT:-}")`` inserted where you want the Git status string.
 
    Replace ``/usr/bin/python3`` with the path to your Python 3 interpreter, and
    replace ``~/share/ps1.py`` with the location you saved ``ps1.py`` at as
@@ -209,6 +216,11 @@ def main():
         help   = "Format prompt for Bash's PS1 (default)",
     )
     parser.add_argument(
+        '-G', '--git-only',
+        action = 'store_true',
+        help   = 'Only output the Git portion of the prompt',
+    )
+    parser.add_argument(
         '--zsh',
         action = 'store_const',
         dest   = 'stylecls',
@@ -226,9 +238,19 @@ def main():
         help  = 'Set to "off" to disable Git integration'
     )
     args = parser.parse_args()
-
+    show_git = args.git_flag != "off"
     # Stylizing & escaping callable:
     style = (args.stylecls or BashStyler)()
+    if args.git_only:
+        s = show_git_status(style) if show_git else ''
+    else:
+        s = show_prompt_string(style, show_git=show_git)
+    print(s)
+
+def show_prompt_string(style, show_git=True):
+    """
+    Construct & return a complete prompt string for the current environment
+    """
 
     # The beginning of the prompt string:
     PS1 = ''
@@ -272,43 +294,8 @@ def main():
     # If we're in a Git repository, show its status.  This can be disabled
     # (e.g., in case of breakage or slowness) by passing "off" as the script's
     # first argument.
-    gs = git_status() if args.git_flag != "off" else None
-    if gs is not None:
-        # Separator:
-        PS1 += style('@')
-        if not gs.bare and gs.stashed:
-            # We have stashed changes:
-            PS1 += style('+', fg=Color.LIGHT_YELLOW, bold=True)
-        # Show HEAD; color changes depending on whether it's detached:
-        head_color = Color.LIGHT_BLUE if gs.detached else Color.LIGHT_GREEN
-        PS1 += style(gs.head, fg=head_color)
-        if gs.ahead:
-            # Show commits ahead of upstream:
-            PS1 += style('+{}'.format(gs.ahead), fg=Color.GREEN)
-            if gs.behind:
-                # Ahead/behind separator:
-                PS1 += style(',')
-        if gs.behind:
-            # Show commits behind upstream:
-            PS1 += style('-{}'.format(gs.behind), fg=Color.RED)
-        if not gs.bare:
-            # Show staged/unstaged status:
-            if gs.staged and gs.unstaged:
-                PS1 += style('*', fg=Color.LIGHT_YELLOW, bold=True)
-            elif gs.staged:
-                PS1 += style('*', fg=Color.GREEN)
-            elif gs.unstaged:
-                PS1 += style('*', fg=Color.RED)
-            #else: Show nothing
-            if gs.untracked:
-                # There are untracked files:
-                PS1 += style('+', fg=Color.RED, bold=True)
-            if gs.state is not None:
-                # The repository is in the middle of something special:
-                PS1 += style('[' + gs.state.value + ']', fg=Color.MAGENTA)
-            if gs.conflict:
-                # There are conflicted files:
-                PS1 += style('!', fg=Color.RED, bold=True)
+    if show_git:
+        PS1 += show_git_status(style)
 
     # The actual prompt symbol at the end of the prompt:
     PS1 += style.prompt_suffix + ' '
@@ -318,9 +305,54 @@ def main():
     # the prompt.  Here's an example that sets the title to `username@host`:
     #PS1 += r'\[\e]0;{}@{}\a\]'.format(os.getlogin(), socket.gethostname())
 
-    # Print the whole prompt string:
-    print(PS1)
+    return PS1
 
+
+def show_git_status(style):
+    """
+    Returns the portion of the prompt string (including the leading separator)
+    dedicated to showing the status of the current Git repository.  If we are
+    not in a Git repository, returns the empty string.
+    """
+    gs = git_status()
+    if gs is None:
+        return ''
+    # Start building the status string with the separator:
+    p = style('@')
+    if not gs.bare and gs.stashed:
+        # We have stashed changes:
+        p += style('+', fg=Color.LIGHT_YELLOW, bold=True)
+    # Show HEAD; color changes depending on whether it's detached:
+    head_color = Color.LIGHT_BLUE if gs.detached else Color.LIGHT_GREEN
+    p += style(gs.head, fg=head_color)
+    if gs.ahead:
+        # Show commits ahead of upstream:
+        p += style('+{}'.format(gs.ahead), fg=Color.GREEN)
+        if gs.behind:
+            # Ahead/behind separator:
+            p += style(',')
+    if gs.behind:
+        # Show commits behind upstream:
+        p += style('-{}'.format(gs.behind), fg=Color.RED)
+    if not gs.bare:
+        # Show staged/unstaged status:
+        if gs.staged and gs.unstaged:
+            p += style('*', fg=Color.LIGHT_YELLOW, bold=True)
+        elif gs.staged:
+            p += style('*', fg=Color.GREEN)
+        elif gs.unstaged:
+            p += style('*', fg=Color.RED)
+        #else: Show nothing
+        if gs.untracked:
+            # There are untracked files:
+            p += style('+', fg=Color.RED, bold=True)
+        if gs.state is not None:
+            # The repository is in the middle of something special:
+            p += style('[' + gs.state.value + ']', fg=Color.MAGENTA)
+        if gs.conflict:
+            # There are conflicted files:
+            p += style('!', fg=Color.RED, bold=True)
+    return p
 
 def cwdstr():
     """

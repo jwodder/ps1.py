@@ -12,6 +12,8 @@ Features:
 - shows the status of the current Git repository (see below)
 - thoroughly documented and easily customizable
 - supports both Bash and zsh
+- can optionally output just the Git status, in case you want to combine it
+  with your own prompt string
 
 
 Requirements
@@ -40,6 +42,11 @@ Installation & Setup
 
         precmd_ps1_py() { PS1="$(/usr/bin/python3 ~/share/ps1.py --zsh "${PS1_GIT:-}")" }
         precmd_functions+=( precmd_ps1_py )
+
+   If you want to use just the Git status portion of the script's output and
+   combine it with your own prompt string, replace the ``PS1`` assignment with
+   your desired prompt, with ``$(/usr/bin/python3 ~/share/ps1.py --git-only
+   "${PS1_GIT:-}")`` inserted where you want the Git status string.
 
    Replace ``/usr/bin/python3`` with the path to your Python 3 interpreter, and
    replace ``~/share/ps1.py`` with the location you saved ``ps1.py`` at as
@@ -73,18 +80,21 @@ the Git integration is enabled.
 Options
 -------
 
---ansi         Format output for direct display
---bash         Format output for use in Bash's ``PS1`` (default)
---zsh          Format output for use in zsh's ``PS1``
--V, --version  Display version information and exit
--h, --help     Display usage information and exit
+--ansi          Format output for direct display
+--bash          Format output for use in Bash's ``PS1`` (default)
+-G, --git-only  Only output the Git status string (including leading
+                separator); output an empty line if not in a Git repository or
+                if "off" is given on the command line
+--zsh           Format output for use in zsh's ``PS1``
+-V, --version   Display version information and exit
+-h, --help      Display usage information and exit
 
 
 Git Status Symbols
 ==================
 
 When inside a Git repository, a number of symbols showing the current ``HEAD``
-and its status are added to the end of the prompt.  Except for the ``@``
+and its status are added near the end of the prompt.  Except for the ``@``
 separator and the ``HEAD`` itself, individual symbols are omitted when not
 relevant.  From left to right, the symbols are:
 
