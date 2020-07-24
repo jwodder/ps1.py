@@ -1,5 +1,5 @@
-v0.2.0 (in development)
------------------------
+v0.2.0 (2020-07-24)
+-------------------
 - [#1] Added an `--ansi` option for outputting raw escape sequences without
   Bash's `\[ ... \]` wrappers
 - [#2] When outputting for Bash, backslashes in strings are now escaped
