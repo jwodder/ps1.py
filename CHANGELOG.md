@@ -1,3 +1,7 @@
+v0.2.1 (in development)
+-----------------------
+- Remove some Python 3.6 syntax that snuck in
+
 v0.2.0 (2020-07-24)
 -------------------
 - [#1] Added an `--ansi` option for outputting raw escape sequences without

@@ -57,7 +57,7 @@ Installation & Setup
    by running ``PS1_GIT=off`` on the command line.
 """
 
-__version__      = '0.2.0'
+__version__      = '0.2.1.dev1'
 __author__       = 'John T. Wodder II'
 __author_email__ = 'ps1@varonathe.org'
 __license__      = 'MIT'
@@ -199,7 +199,7 @@ class ZshStyler:
 def main():
     parser = argparse.ArgumentParser(
         description='Yet another bash/zsh prompt script.  '
-                    f'Visit <{__url__}> for more information.'
+                    'Visit <{}> for more information.'.format(__url__)
     )
     parser.add_argument(
         '--ansi',
@@ -230,7 +230,7 @@ def main():
     parser.add_argument(
         '-V', '--version',
         action  = 'version',
-        version = f'%(prog)s {__version__}',
+        version = '%(prog)s {}'.format(__version__),
     )
     parser.add_argument(
         'git_flag',
