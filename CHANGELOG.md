@@ -1,5 +1,5 @@
-v0.2.1 (in development)
------------------------
+v0.2.1 (2021-06-03)
+-------------------
 - Remove some Python 3.6 syntax that snuck in
 
 v0.2.0 (2020-07-24)
