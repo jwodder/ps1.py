@@ -1,3 +1,8 @@
+v0.2.2 (in development)
+-----------------------
+- When inside a `.git` directory, treat it like a bare repository, thereby
+  fixing a crash
+
 v0.2.1 (2021-06-03)
 -------------------
 - Remove some Python 3.6 syntax that snuck in

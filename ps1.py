@@ -57,7 +57,7 @@ Installation & Setup
    by running ``PS1_GIT=off`` on the command line.
 """
 
-__version__      = '0.2.1'
+__version__      = '0.2.2.dev1'
 __author__       = 'John T. Wodder II'
 __author_email__ = 'ps1@varonathe.org'
 __license__      = 'MIT'
@@ -498,7 +498,11 @@ def git_status():
         gs.detached = True
 
     gs.ahead = gs.behind = None
-    gs.bare = git('rev-parse', '--is-bare-repository') == 'true'
+    gs.bare = git('rev-parse', '--is-bare-repository') == 'true' or \
+                git('rev-parse', '--is-inside-work-tree') == 'false'
+    # Note: The latter condition above actually means that we're inside a .git
+    # directory, but that's similar enough to a bare repo that no one will
+    # care.
     if gs.bare:
         delta = git('rev-list', '--count', '--left-right', '@{upstream}...HEAD')
         if delta is not None:
