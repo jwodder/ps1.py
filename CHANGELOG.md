@@ -1,5 +1,5 @@
-v0.2.2 (in development)
------------------------
+v0.2.2 (2021-07-11)
+-------------------
 - When inside a `.git` directory, treat it like a bare repository, thereby
   fixing a crash
 

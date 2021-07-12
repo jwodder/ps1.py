@@ -57,7 +57,7 @@ Installation & Setup
    by running ``PS1_GIT=off`` on the command line.
 """
 
-__version__      = '0.2.2.dev1'
+__version__      = '0.2.2'
 __author__       = 'John T. Wodder II'
 __author_email__ = 'ps1@varonathe.org'
 __license__      = 'MIT'
