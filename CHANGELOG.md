@@ -1,5 +1,5 @@
-v0.3.0 (in development)
------------------------
+v0.3.0 (2021-10-13)
+-------------------
 - Support showing Conda environment prompt prefixes
 
 v0.2.2 (2021-07-11)
