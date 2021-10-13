@@ -9,7 +9,8 @@ it's better.
 Features:
 
 - lets you know if you have mail in ``$MAIL``
-- shows chroot and `virtualenv <https://virtualenv.pypa.io>`_ prompt prefixes
+- shows chroot, `virtualenv <https://virtualenv.pypa.io>`_, and `Conda
+  <https://conda.io>`_ environment prompt prefixes
 - automatically truncates the current directory path if it gets too long
 - shows the status of the current Git repository
 - thoroughly documented and easily customizable
@@ -57,7 +58,7 @@ Installation & Setup
    by running ``PS1_GIT=off`` on the command line.
 """
 
-__version__      = '0.3.0'
+__version__      = '0.4.0.dev1'
 __author__       = 'John T. Wodder II'
 __author_email__ = 'ps1@varonathe.org'
 __license__      = 'MIT'
