@@ -7,7 +7,8 @@ it's better.
 Features:
 
 - lets you know if you have mail in ``$MAIL``
-- shows chroot and `virtualenv <https://virtualenv.pypa.io>`_ prompt prefixes
+- shows chroot, `virtualenv <https://virtualenv.pypa.io>`_, and `Conda
+  <https://conda.io>`_ environment prompt prefixes
 - automatically truncates the current directory path if it gets too long
 - shows the status of the current Git repository (see below)
 - thoroughly documented and easily customizable

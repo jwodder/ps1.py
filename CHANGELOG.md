@@ -1,3 +1,7 @@
+v0.3.0 (in development)
+-----------------------
+- Support showing Conda environment prompt prefixes
+
 v0.2.2 (2021-07-11)
 -------------------
 - When inside a `.git` directory, treat it like a bare repository, thereby

@@ -57,7 +57,7 @@ Installation & Setup
    by running ``PS1_GIT=off`` on the command line.
 """
 
-__version__      = '0.2.2'
+__version__      = '0.3.0.dev1'
 __author__       = 'John T. Wodder II'
 __author_email__ = 'ps1@varonathe.org'
 __license__      = 'MIT'
@@ -266,6 +266,12 @@ def show_prompt_string(style, show_git=True):
     debian_chroot = cat(Path('/etc/debian_chroot'))
     if debian_chroot:
         PS1 += style('[{}] '.format(debian_chroot), fg=Color.BLUE, bold=True)
+
+    # If a Conda environment is active, show its prompt prefix (which already
+    # includes the parentheses and trailing space).
+    if 'CONDA_PROMPT_MODIFIER' in os.environ:
+        # Green like a snake!
+        PS1 += style(os.environ['CONDA_PROMPT_MODIFIER'], fg=Color.LIGHT_GREEN)
 
     # If we're inside a Python virtualenv, show the basename of the virtualenv
     # directory.  (Note: As of virtualenv v20.0.27, we can't support custom
