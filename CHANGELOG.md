@@ -1,5 +1,5 @@
-v0.4.0 (in development)
------------------------
+v0.4.0 (2022-02-14)
+-------------------
 - Support custom virtualenv prompt prefixes
 
 v0.3.0 (2021-10-13)
