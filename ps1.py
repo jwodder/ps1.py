@@ -65,6 +65,7 @@ __license__      = 'MIT'
 __url__          = 'https://github.com/jwodder/ps1.py'
 
 import argparse
+from   ast        import literal_eval
 from   enum       import Enum
 import os
 from   pathlib    import Path, PurePath
@@ -275,11 +276,27 @@ def show_prompt_string(style, show_git=True):
         PS1 += style(os.environ['CONDA_PROMPT_MODIFIER'], fg=Color.LIGHT_GREEN)
 
     # If we're inside a Python virtualenv, show the basename of the virtualenv
-    # directory.  (Note: As of virtualenv v20.0.27, we can't support custom
-    # virtualenv prompt prefixes, as virtualenv does not export the relevant
-    # information to the environment.)
+    # directory (or the custom prompt prefix, if set).
     if 'VIRTUAL_ENV' in os.environ:
-        PS1 += style('({0.name}) '.format(Path(os.environ['VIRTUAL_ENV'])))
+        venv = Path(os.environ['VIRTUAL_ENV'])
+        prompt = venv.name
+        try:
+            with (venv / "pyvenv.cfg").open() as fp:
+                for line in fp:
+                    line = line.strip()
+                    m = re.match(r'^prompt\s*=\s*', line)
+                    if m:
+                        prompt = line[m.end():]
+                        if re.fullmatch(r'([\x27"]).*\1', prompt):
+                            # repr-ized prompt produced by venv
+                            try:
+                                prompt = literal_eval(prompt)
+                            except Exception:
+                                pass
+                        break
+        except FileNotFoundError:
+            pass
+        PS1 += style('({}) '.format(prompt))
 
     # Show the username of the current user.  I know who I am, so I don't need
     # to see this, but the code is left in here as an example in case you want

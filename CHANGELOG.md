@@ -1,3 +1,7 @@
+v0.4.0 (in development)
+-----------------------
+- Support custom virtualenv prompt prefixes
+
 v0.3.0 (2021-10-13)
 -------------------
 - Support showing Conda environment prompt prefixes
