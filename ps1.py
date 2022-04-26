@@ -499,9 +499,11 @@ def git_status():
     If the current directory is *not* in a Git repository, ``git_status()``
     returns `None`.
 
-    This function is based on a combination of Git's ``git-prompt.sh``
-    <https://git.io/qD0ykw> and magicmonty's bash-git-prompt
-    <https://git.io/v5HSP>.
+    This function is based on a combination of Git's `git-prompt.sh`__ and
+    magicmonty's bash-git-prompt__.
+
+    __ https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh
+    __ https://github.com/magicmonty/bash-git-prompt/blob/master/gitstatus.py
     """
 
     git_dir = git('rev-parse', '--git-dir')
