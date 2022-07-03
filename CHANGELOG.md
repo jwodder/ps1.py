@@ -1,3 +1,8 @@
+v0.5.0 (in development)
+-----------------------
+- Add a `--git-timeout` option for disabling the Git integration if `git
+  status` takes too long to run
+
 v0.4.0 (2022-02-14)
 -------------------
 - Support custom virtualenv prompt prefixes

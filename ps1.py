@@ -71,7 +71,9 @@ import os
 from   pathlib    import Path, PurePath
 import re
 import socket
-from   subprocess import CalledProcessError, DEVNULL, check_output
+from   subprocess import (
+    CalledProcessError, TimeoutExpired, DEVNULL, PIPE, check_output, run
+)
 from   types      import SimpleNamespace
 
 #: Default maximum display length of the path to the current working directory
@@ -223,6 +225,16 @@ def main():
         help   = 'Only output the Git portion of the prompt',
     )
     parser.add_argument(
+        "--git-timeout",
+        type=float,
+        metavar="SECONDS",
+        default=3,
+        help=(
+            "Disable Git integration if `git status` runtime exceeds timeout"
+            "  [default: 3]"
+        ),
+    )
+    parser.add_argument(
         '--zsh',
         action = 'store_const',
         dest   = 'stylecls',
@@ -244,12 +256,12 @@ def main():
     # Stylizing & escaping callable:
     style = (args.stylecls or BashStyler)()
     if args.git_only:
-        s = show_git_status(style) if show_git else ''
+        s = show_git_status(style, git_timeout=args.git_timeout) if show_git else ''
     else:
-        s = show_prompt_string(style, show_git=show_git)
+        s = show_prompt_string(style, show_git=show_git, git_timeout=args.git_timeout)
     print(s)
 
-def show_prompt_string(style, show_git=True):
+def show_prompt_string(style, show_git=True, git_timeout=3):
     """
     Construct & return a complete prompt string for the current environment
     """
@@ -319,7 +331,7 @@ def show_prompt_string(style, show_git=True):
     # (e.g., in case of breakage or slowness) by passing "off" as the script's
     # first argument.
     if show_git:
-        PS1 += show_git_status(style)
+        PS1 += show_git_status(style, git_timeout=git_timeout)
 
     # The actual prompt symbol at the end of the prompt:
     PS1 += style.prompt_suffix + ' '
@@ -332,13 +344,14 @@ def show_prompt_string(style, show_git=True):
     return PS1
 
 
-def show_git_status(style):
+def show_git_status(style, git_timeout=3):
     """
     Returns the portion of the prompt string (including the leading separator)
     dedicated to showing the status of the current Git repository.  If we are
-    not in a Git repository, returns the empty string.
+    not in a Git repository, or if ``git status`` times out, returns the empty
+    string.
     """
-    gs = git_status()
+    gs = git_status(timeout=git_timeout)
     if gs is None:
         return ''
     # Start building the status string with the separator:
@@ -443,7 +456,7 @@ class GitState(Enum):
     BISECTING       = 'BSECT'
 
 
-def git_status():
+def git_status(timeout=3):
     """
     If the current directory is in a Git repository, ``git_status()`` returns
     an object with the following attributes:
@@ -496,8 +509,9 @@ def git_status():
         pair
     :vartype progress: tuple(int, int) or None
 
-    If the current directory is *not* in a Git repository, ``git_status()``
-    returns `None`.
+    If the current directory is *not* in a Git repository, or if the runtime of
+    the ``git status`` command exceeds ``timeout``, ``git_status()`` returns
+    `None`.
 
     This function is based on a combination of Git's `git-prompt.sh`__ and
     magicmonty's bash-git-prompt__.
@@ -540,7 +554,20 @@ def git_status():
     gs.unstaged  = False
     gs.untracked = False
     gs.conflict  = False
-    for line in git('status', '--porcelain', '--branch').splitlines():
+
+    try:
+        r = run(
+            ["git", "status", "--porcelain", "--branch"],
+            stdout=PIPE,
+            stderr=DEVNULL,
+            check=True,
+            universal_newlines=True,
+            timeout=timeout,
+        )
+    except TimeoutExpired:
+        return None
+
+    for line in r.stdout.strip().splitlines():
         if line.startswith('##'):
             m = re.fullmatch(r'''
                 \#\#\s*(?:(?:Initial commit|No commits yet) on )?

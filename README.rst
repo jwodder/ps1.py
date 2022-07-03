@@ -86,6 +86,9 @@ Options
 -G, --git-only  Only output the Git status string (including leading
                 separator); output an empty line if not in a Git repository or
                 if "off" is given on the command line
+--git-timeout SECONDS
+                If running ``git status`` takes longer than the given number of
+                seconds (default: 3), disable the Git integration
 --zsh           Format output for use in zsh's ``PS1``
 -V, --version   Display version information and exit
 -h, --help      Display usage information and exit
