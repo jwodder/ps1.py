@@ -58,26 +58,32 @@ Installation & Setup
    by running ``PS1_GIT=off`` on the command line.
 """
 
-__version__      = '0.4.0'
-__author__       = 'John T. Wodder II'
-__author_email__ = 'ps1@varonathe.org'
-__license__      = 'MIT'
-__url__          = 'https://github.com/jwodder/ps1.py'
+__version__ = "0.4.0"
+__author__ = "John T. Wodder II"
+__author_email__ = "ps1@varonathe.org"
+__license__ = "MIT"
+__url__ = "https://github.com/jwodder/ps1.py"
 
 import argparse
-from   ast        import literal_eval
-from   enum       import Enum
+from ast import literal_eval
+from enum import Enum
 import os
-from   pathlib    import Path, PurePath
+from pathlib import Path, PurePath
 import re
 import socket
-from   subprocess import (
-    CalledProcessError, TimeoutExpired, DEVNULL, PIPE, check_output, run
+from subprocess import (
+    DEVNULL,
+    PIPE,
+    CalledProcessError,
+    TimeoutExpired,
+    check_output,
+    run,
 )
-from   types      import SimpleNamespace
+from types import SimpleNamespace
 
 #: Default maximum display length of the path to the current working directory
 MAX_CWD_LEN = 30
+
 
 class Color(Enum):
     """
@@ -85,18 +91,18 @@ class Color(Enum):
     xterm number.
     """
 
-    RED           = 1
-    GREEN         = 2
-    YELLOW        = 3
-    BLUE          = 4
-    MAGENTA       = 5
-    CYAN          = 6
-    LIGHT_RED     = 9
-    LIGHT_GREEN   = 10
-    LIGHT_YELLOW  = 11
-    LIGHT_BLUE    = 12
+    RED = 1
+    GREEN = 2
+    YELLOW = 3
+    BLUE = 4
+    MAGENTA = 5
+    CYAN = 6
+    LIGHT_RED = 9
+    LIGHT_GREEN = 10
+    LIGHT_YELLOW = 11
+    LIGHT_BLUE = 12
     LIGHT_MAGENTA = 13
-    LIGHT_CYAN    = 14
+    LIGHT_CYAN = 14
 
     def asfg(self):
         """
@@ -108,11 +114,11 @@ class Color(Enum):
 
 
 class BashStyler:
-    """ Class for escaping & styling strings for use in Bash's PS1 variable """
+    """Class for escaping & styling strings for use in Bash's PS1 variable"""
 
     #: The actual prompt symbol to add at the end of the output, just before a
     #: final space character
-    prompt_suffix = r'\$'
+    prompt_suffix = r"\$"
 
     def __call__(self, s, fg=None, bold=False):
         r"""
@@ -129,13 +135,13 @@ class BashStyler:
         """
         s = self.escape(s)
         if fg is not None:
-            s = r'\[\e[{}{}m\]{}\[\e[0m\]'.format(
+            s = r"\[\e[{}{}m\]{}\[\e[0m\]".format(
                 fg.asfg(),
-                ';1' if bold else '',
+                ";1" if bold else "",
                 s,
             )
         elif bold:
-            s = r'\[\e[1m\]{}\[\e[0m\]'.format(s)
+            s = r"\[\e[1m\]{}\[\e[0m\]".format(s)
         return s
 
     def escape(self, s):
@@ -143,15 +149,15 @@ class BashStyler:
         Escape characters in the string ``s`` that have special meaning in a
         PS1 variable
         """
-        return s.replace('\\', r'\\')
+        return s.replace("\\", r"\\")
 
 
 class ANSIStyler:
-    """ Class for styling strings for display immediately in the terminal """
+    """Class for styling strings for display immediately in the terminal"""
 
     #: The actual prompt symbol to add at the end of the output, just before a
     #: final space character
-    prompt_suffix = '$'
+    prompt_suffix = "$"
 
     def __call__(self, s, fg=None, bold=False):
         r"""
@@ -164,18 +170,18 @@ class ANSIStyler:
         :param bool bold: whether to stylize the string as bold
         """
         if fg is not None:
-            s = '\033[{}{}m{}\033[0m'.format(fg.asfg(), ';1' if bold else '', s)
+            s = "\033[{}{}m{}\033[0m".format(fg.asfg(), ";1" if bold else "", s)
         elif bold:
-            s = '\033[1m{}\033[0m'.format(s)
+            s = "\033[1m{}\033[0m".format(s)
         return s
 
 
 class ZshStyler:
-    """ Class for escaping & styling strings for use in zsh's PS1 variable """
+    """Class for escaping & styling strings for use in zsh's PS1 variable"""
 
     #: The actual prompt symbol to add at the end of the output, just before a
     #: final space character
-    prompt_suffix = '%#'
+    prompt_suffix = "%#"
 
     def __call__(self, s, fg=None, bold=False):
         """
@@ -191,38 +197,41 @@ class ZshStyler:
         """
         s = self.escape(s)
         if bold:
-            s = '%B{}%b'.format(s)
+            s = "%B{}%b".format(s)
         if fg is not None:
-            s = '%F{{{}}}{}%f'.format(fg.value, s)
+            s = "%F{{{}}}{}%f".format(fg.value, s)
         return s
 
     def escape(self, s):
-        return s.replace('%', '%%')
+        return s.replace("%", "%%")
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Yet another bash/zsh prompt script.  '
-                    'Visit <{}> for more information.'.format(__url__)
+        description=(
+            "Yet another bash/zsh prompt script."
+            "  Visit <{}> for more information.".format(__url__)
+        )
     )
     parser.add_argument(
-        '--ansi',
-        action = 'store_const',
-        dest   = 'stylecls',
-        const  = ANSIStyler,
-        help   = 'Format prompt for direct display',
+        "--ansi",
+        action="store_const",
+        dest="stylecls",
+        const=ANSIStyler,
+        help="Format prompt for direct display",
     )
     parser.add_argument(
-        '--bash',
-        action = 'store_const',
-        dest   = 'stylecls',
-        const  = BashStyler,
-        help   = "Format prompt for Bash's PS1 (default)",
+        "--bash",
+        action="store_const",
+        dest="stylecls",
+        const=BashStyler,
+        help="Format prompt for Bash's PS1 (default)",
     )
     parser.add_argument(
-        '-G', '--git-only',
-        action = 'store_true',
-        help   = 'Only output the Git portion of the prompt',
+        "-G",
+        "--git-only",
+        action="store_true",
+        help="Only output the Git portion of the prompt",
     )
     parser.add_argument(
         "--git-timeout",
@@ -235,31 +244,34 @@ def main():
         ),
     )
     parser.add_argument(
-        '--zsh',
-        action = 'store_const',
-        dest   = 'stylecls',
-        const  = ZshStyler,
-        help   = "Format prompt for zsh's PS1",
+        "--zsh",
+        action="store_const",
+        dest="stylecls",
+        const=ZshStyler,
+        help="Format prompt for zsh's PS1",
     )
     parser.add_argument(
-        '-V', '--version',
-        action  = 'version',
-        version = '%(prog)s {}'.format(__version__),
+        "-V",
+        "--version",
+        action="version",
+        version="%(prog)s {}".format(__version__),
     )
     parser.add_argument(
-        'git_flag',
-        nargs = '?',
-        help  = 'Set to "off" to disable Git integration'
+        "git_flag", nargs="?", help='Set to "off" to disable Git integration'
     )
     args = parser.parse_args()
     show_git = args.git_flag != "off"
     # Stylizing & escaping callable:
     style = (args.stylecls or BashStyler)()
     if args.git_only:
-        s = show_git_status(style, git_timeout=args.git_timeout) if show_git else ''
+        if show_git:
+            s = show_git_status(style, git_timeout=args.git_timeout)
+        else:
+            s = ""
     else:
         s = show_prompt_string(style, show_git=show_git, git_timeout=args.git_timeout)
     print(s)
+
 
 def show_prompt_string(style, show_git=True, git_timeout=3):
     """
@@ -267,38 +279,38 @@ def show_prompt_string(style, show_git=True, git_timeout=3):
     """
 
     # The beginning of the prompt string:
-    PS1 = ''
+    PS1 = ""
 
     # If the $MAIL file is nonempty, show the string "[MAIL]":
     try:
-        if Path(os.environ['MAIL']).stat().st_size > 0:
-            PS1 += style('[MAIL] ', fg=Color.CYAN, bold=True)
+        if Path(os.environ["MAIL"]).stat().st_size > 0:
+            PS1 += style("[MAIL] ", fg=Color.CYAN, bold=True)
     except (KeyError, FileNotFoundError):
         pass
 
     # Show the chroot we're working in (if any):
-    debian_chroot = cat(Path('/etc/debian_chroot'))
+    debian_chroot = cat(Path("/etc/debian_chroot"))
     if debian_chroot:
-        PS1 += style('[{}] '.format(debian_chroot), fg=Color.BLUE, bold=True)
+        PS1 += style("[{}] ".format(debian_chroot), fg=Color.BLUE, bold=True)
 
     # If a Conda environment is active, show its prompt prefix (which already
     # includes the parentheses and trailing space).
-    if 'CONDA_PROMPT_MODIFIER' in os.environ:
+    if "CONDA_PROMPT_MODIFIER" in os.environ:
         # Green like a snake!
-        PS1 += style(os.environ['CONDA_PROMPT_MODIFIER'], fg=Color.LIGHT_GREEN)
+        PS1 += style(os.environ["CONDA_PROMPT_MODIFIER"], fg=Color.LIGHT_GREEN)
 
     # If we're inside a Python virtualenv, show the basename of the virtualenv
     # directory (or the custom prompt prefix, if set).
-    if 'VIRTUAL_ENV' in os.environ:
-        venv = Path(os.environ['VIRTUAL_ENV'])
+    if "VIRTUAL_ENV" in os.environ:
+        venv = Path(os.environ["VIRTUAL_ENV"])
         prompt = venv.name
         try:
             with (venv / "pyvenv.cfg").open() as fp:
                 for line in fp:
                     line = line.strip()
-                    m = re.match(r'^prompt\s*=\s*', line)
+                    m = re.match(r"^prompt\s*=\s*", line)
                     if m:
-                        prompt = line[m.end():]
+                        prompt = line[m.end() :]
                         if re.fullmatch(r'([\x27"]).*\1', prompt):
                             # repr-ized prompt produced by venv
                             try:
@@ -308,21 +320,21 @@ def show_prompt_string(style, show_git=True, git_timeout=3):
                         break
         except FileNotFoundError:
             pass
-        PS1 += style('({}) '.format(prompt))
+        PS1 += style("({}) ".format(prompt))
 
     # Show the username of the current user.  I know who I am, so I don't need
     # to see this, but the code is left in here as an example in case you want
     # to enable it.
-    #PS1 += style(os.getlogin(), fg=Color.LIGHT_GREEN)
+    # PS1 += style(os.getlogin(), fg=Color.LIGHT_GREEN)
 
     # Separator:
-    #PS1 += style('@')
+    # PS1 += style('@')
 
     # Show the current hostname:
     PS1 += style(socket.gethostname(), fg=Color.LIGHT_RED)
 
     # Separator:
-    PS1 += style(':')
+    PS1 += style(":")
 
     # Show the path to the current working directory:
     PS1 += style(cwdstr(), fg=Color.LIGHT_CYAN)
@@ -334,12 +346,12 @@ def show_prompt_string(style, show_git=True, git_timeout=3):
         PS1 += show_git_status(style, git_timeout=git_timeout)
 
     # The actual prompt symbol at the end of the prompt:
-    PS1 += style.prompt_suffix + ' '
+    PS1 += style.prompt_suffix + " "
 
     # If your terminal emulator supports it, it's also possible to set the
     # title of the terminal window by emitting "\[\e]0;$TITLE\a\]" somewhere in
     # the prompt.  Here's an example that sets the title to `username@host`:
-    #PS1 += r'\[\e]0;{}@{}\a\]'.format(os.getlogin(), socket.gethostname())
+    # PS1 += r'\[\e]0;{}@{}\a\]'.format(os.getlogin(), socket.gethostname())
 
     return PS1
 
@@ -353,43 +365,44 @@ def show_git_status(style, git_timeout=3):
     """
     gs = git_status(timeout=git_timeout)
     if gs is None:
-        return ''
+        return ""
     # Start building the status string with the separator:
-    p = style('@')
+    p = style("@")
     if not gs.bare and gs.stashed:
         # We have stashed changes:
-        p += style('+', fg=Color.LIGHT_YELLOW, bold=True)
+        p += style("+", fg=Color.LIGHT_YELLOW, bold=True)
     # Show HEAD; color changes depending on whether it's detached:
     head_color = Color.LIGHT_BLUE if gs.detached else Color.LIGHT_GREEN
     p += style(gs.head, fg=head_color)
     if gs.ahead:
         # Show commits ahead of upstream:
-        p += style('+{}'.format(gs.ahead), fg=Color.GREEN)
+        p += style("+{}".format(gs.ahead), fg=Color.GREEN)
         if gs.behind:
             # Ahead/behind separator:
-            p += style(',')
+            p += style(",")
     if gs.behind:
         # Show commits behind upstream:
-        p += style('-{}'.format(gs.behind), fg=Color.RED)
+        p += style("-{}".format(gs.behind), fg=Color.RED)
     if not gs.bare:
         # Show staged/unstaged status:
         if gs.staged and gs.unstaged:
-            p += style('*', fg=Color.LIGHT_YELLOW, bold=True)
+            p += style("*", fg=Color.LIGHT_YELLOW, bold=True)
         elif gs.staged:
-            p += style('*', fg=Color.GREEN)
+            p += style("*", fg=Color.GREEN)
         elif gs.unstaged:
-            p += style('*', fg=Color.RED)
-        #else: Show nothing
+            p += style("*", fg=Color.RED)
+        # else: Show nothing
         if gs.untracked:
             # There are untracked files:
-            p += style('+', fg=Color.RED, bold=True)
+            p += style("+", fg=Color.RED, bold=True)
         if gs.state is not None:
             # The repository is in the middle of something special:
-            p += style('[' + gs.state.value + ']', fg=Color.MAGENTA)
+            p += style("[" + gs.state.value + "]", fg=Color.MAGENTA)
         if gs.conflict:
             # There are conflicted files:
-            p += style('!', fg=Color.RED, bold=True)
+            p += style("!", fg=Color.RED, bold=True)
     return p
+
 
 def cwdstr():
     """
@@ -398,12 +411,13 @@ def cwdstr():
     be truncated to be no more than `MAX_CWD_LEN` characters long.
     """
     # Prefer $PWD to os.getcwd() as the former does not resolve symlinks
-    cwd = Path(os.environ.get('PWD') or os.getcwd())
+    cwd = Path(os.environ.get("PWD") or os.getcwd())
     try:
-        cwd = '~' / cwd.relative_to(Path.home())
+        cwd = "~" / cwd.relative_to(Path.home())
     except ValueError:
         pass
     return shortpath(cwd)
+
 
 def shortpath(p: PurePath, max_len=MAX_CWD_LEN):
     """
@@ -432,12 +446,12 @@ def shortpath(p: PurePath, max_len=MAX_CWD_LEN):
     """
     assert len(p.parts) > 0
     if len(str(p)) > max_len:
-        p = PurePath('…', *p.parts[1+(p.parts[0] == '/'):])
+        p = PurePath("…", *p.parts[1 + (p.parts[0] == "/") :])
         while len(str(p)) > max_len:
             if len(p.parts) > 2:
-                p = PurePath('…', *p.parts[2:])
+                p = PurePath("…", *p.parts[2:])
             else:
-                p = PurePath('…', p.parts[1][:max_len-3] + '…')
+                p = PurePath("…", p.parts[1][: max_len - 3] + "…")
                 assert len(str(p)) <= max_len
     return str(p)
 
@@ -448,12 +462,13 @@ class GitState(Enum):
     in.  The value of each enumeration is a short string for displaying in a
     command prompt.
     """
-    REBASE_MERGING  = 'REBAS'
-    REBASE_APPLYING = 'REBAS'
-    MERGING         = 'MERGE'
-    CHERRY_PICKING  = 'CHYPK'
-    REVERTING       = 'REVRT'
-    BISECTING       = 'BSECT'
+
+    REBASE_MERGING = "REBAS"
+    REBASE_APPLYING = "REBAS"
+    MERGING = "MERGE"
+    CHERRY_PICKING = "CHYPK"
+    REVERTING = "REVRT"
+    BISECTING = "BSECT"
 
 
 def git_status(timeout=3):
@@ -520,40 +535,43 @@ def git_status(timeout=3):
     __ https://github.com/magicmonty/bash-git-prompt/blob/master/gitstatus.py
     """
 
-    git_dir = git('rev-parse', '--git-dir')
+    git_dir = git("rev-parse", "--git-dir")
     if git_dir is None:
         return None
     git_dir = Path(git_dir)
 
     gs = SimpleNamespace()
-    gs.head = cat(git_dir / 'HEAD')
+    gs.head = cat(git_dir / "HEAD")
     if gs.head is None:
         gs.detached = False
-    elif gs.head.startswith('ref: '):
-        gs.head = re.sub(r'^(ref: )?(refs/heads/)?', '', gs.head)
+    elif gs.head.startswith("ref: "):
+        gs.head = re.sub(r"^(ref: )?(refs/heads/)?", "", gs.head)
         gs.detached = False
     else:
-        gs.head = git('describe', '--tags', '--exact-match', 'HEAD') or \
-                    git('rev-parse', '--short', 'HEAD')
+        gs.head = git("describe", "--tags", "--exact-match", "HEAD") or git(
+            "rev-parse", "--short", "HEAD"
+        )
         gs.detached = True
 
     gs.ahead = gs.behind = None
-    gs.bare = git('rev-parse', '--is-bare-repository') == 'true' or \
-                git('rev-parse', '--is-inside-work-tree') == 'false'
+    gs.bare = (
+        git("rev-parse", "--is-bare-repository") == "true"
+        or git("rev-parse", "--is-inside-work-tree") == "false"
+    )
     # Note: The latter condition above actually means that we're inside a .git
     # directory, but that's similar enough to a bare repo that no one will
     # care.
     if gs.bare:
-        delta = git('rev-list', '--count', '--left-right', '@{upstream}...HEAD')
+        delta = git("rev-list", "--count", "--left-right", "@{upstream}...HEAD")
         if delta is not None:
             gs.behind, gs.ahead = map(int, delta.split())
         return gs
 
-    gs.stashed   = git('rev-parse','--verify','--quiet','refs/stash')is not None
-    gs.staged    = False
-    gs.unstaged  = False
+    gs.stashed = git("rev-parse", "--verify", "--quiet", "refs/stash") is not None
+    gs.staged = False
+    gs.unstaged = False
     gs.untracked = False
-    gs.conflict  = False
+    gs.conflict = False
 
     try:
         r = run(
@@ -568,8 +586,9 @@ def git_status(timeout=3):
         return None
 
     for line in r.stdout.strip().splitlines():
-        if line.startswith('##'):
-            m = re.fullmatch(r'''
+        if line.startswith("##"):
+            m = re.fullmatch(
+                r"""
                 \#\#\s*(?:(?:Initial commit|No commits yet) on )?
                 (?P<branch>(?:[^\s.]|\.(?!\.))+)
                 (?:\.\.\.\S+
@@ -580,47 +599,50 @@ def git_status(timeout=3):
                         \]
                     )?
                 )?\s*
-            ''', line, flags=re.X)
+            """,
+                line,
+                flags=re.X,
+            )
             if m:
-                if m.group('ahead') is not None:
-                    gs.ahead  = int(m.group('ahead'))
-                if m.group('behind') is not None:
-                    gs.behind = int(m.group('behind'))
-        elif line.startswith('??'):
+                if m.group("ahead") is not None:
+                    gs.ahead = int(m.group("ahead"))
+                if m.group("behind") is not None:
+                    gs.behind = int(m.group("behind"))
+        elif line.startswith("??"):
             gs.untracked = True
-        elif not line.startswith('!!'):
-            if 'U' in line[:2]:
+        elif not line.startswith("!!"):
+            if "U" in line[:2]:
                 gs.conflict = True
             else:
-                if line[0] != ' ':
+                if line[0] != " ":
                     gs.staged = True
-                if line[1] in 'DM':
+                if line[1] in "DM":
                     gs.unstaged = True
 
     gs.rebase_head = None
-    gs.progress    = None
-    if (git_dir/'rebase-merge').is_dir():
+    gs.progress = None
+    if (git_dir / "rebase-merge").is_dir():
         gs.state = GitState.REBASE_MERGING
-        gs.rebase_head = cat(git_dir/'rebase-merge'/'head-name')
+        gs.rebase_head = cat(git_dir / "rebase-merge" / "head-name")
         gs.progress = (
-            int(cat(git_dir/'rebase-merge'/'msgnum')),
-            int(cat(git_dir/'rebase-merge'/'end')),
+            int(cat(git_dir / "rebase-merge" / "msgnum")),
+            int(cat(git_dir / "rebase-merge" / "end")),
         )
-    elif (git_dir/'rebase-apply').is_dir():
+    elif (git_dir / "rebase-apply").is_dir():
         gs.state = GitState.REBASE_APPLYING
-        if (git_dir/'rebase-apply'/'rebasing').is_file():
-            gs.rebase_head = cat(git_dir/'rebase-apply'/'head-name')
+        if (git_dir / "rebase-apply" / "rebasing").is_file():
+            gs.rebase_head = cat(git_dir / "rebase-apply" / "head-name")
         gs.progress = (
-            int(cat(git_dir/'rebase-apply'/'next')),
-            int(cat(git_dir/'rebase-apply'/'last')),
+            int(cat(git_dir / "rebase-apply" / "next")),
+            int(cat(git_dir / "rebase-apply" / "last")),
         )
-    elif (git_dir/'MERGE_HEAD').is_file():
+    elif (git_dir / "MERGE_HEAD").is_file():
         gs.state = GitState.MERGING
-    elif (git_dir/'CHERRY_PICK_HEAD').is_file():
+    elif (git_dir / "CHERRY_PICK_HEAD").is_file():
         gs.state = GitState.CHERRY_PICKING
-    elif (git_dir/'REVERT_HEAD').is_file():
+    elif (git_dir / "REVERT_HEAD").is_file():
         gs.state = GitState.REVERTING
-    elif (git_dir/'BISECT_LOG').is_file():
+    elif (git_dir / "BISECT_LOG").is_file():
         gs.state = GitState.BISECTING
     else:
         gs.state = None
@@ -635,12 +657,13 @@ def git(*args):
     """
     try:
         return check_output(
-            ('git',) + args,
+            ("git",) + args,
             universal_newlines=True,
             stderr=DEVNULL,
         ).strip()
     except CalledProcessError:
         return None
+
 
 def cat(path: Path):
     """
@@ -652,5 +675,6 @@ def cat(path: Path):
     except FileNotFoundError:
         return None
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
