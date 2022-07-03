@@ -1,5 +1,5 @@
-v0.5.0 (in development)
------------------------
+v0.5.0 (2022-07-03)
+-------------------
 - Add a `--git-timeout` option for disabling the Git integration if `git
   status` takes too long to run
 
