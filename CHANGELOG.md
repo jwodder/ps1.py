@@ -1,3 +1,7 @@
+v0.6.0 (in development)
+-----------------------
+- Always open text files in UTF-8
+
 v0.5.0 (2022-07-03)
 -------------------
 - Add a `--git-timeout` option for disabling the Git integration if `git

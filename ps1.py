@@ -305,7 +305,7 @@ def show_prompt_string(style, show_git=True, git_timeout=3):
         venv = Path(os.environ["VIRTUAL_ENV"])
         prompt = venv.name
         try:
-            with (venv / "pyvenv.cfg").open() as fp:
+            with (venv / "pyvenv.cfg").open(encoding="utf-8") as fp:
                 for line in fp:
                     line = line.strip()
                     m = re.match(r"^prompt\s*=\s*", line)
@@ -671,7 +671,7 @@ def cat(path: Path):
     stripped.  If the file does not exist, return `None`.
     """
     try:
-        return path.read_text().strip()
+        return path.read_text(encoding="utf-8").strip()
     except FileNotFoundError:
         return None
 
