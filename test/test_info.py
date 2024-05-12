@@ -57,8 +57,6 @@ def test_display_simple_prompt_info_with_git_ansi() -> None:
                 untracked=False,
                 conflict=False,
                 state=None,
-                rebase_head=None,
-                progress=None,
             ),
         ),
     )

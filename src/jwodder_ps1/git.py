@@ -5,7 +5,6 @@ from pathlib import Path
 import re
 import subprocess
 from .style import Color, Styler
-from .util import cat
 
 
 @dataclass
@@ -91,10 +90,10 @@ class WorkTreeStatus:
     state: GitState | None
 
     #: The name of the original branch when rebasing?
-    rebase_head: str | None
+    # rebase_head: str | None
 
     #: When rebasing, the current progress as a ``(current, total)`` pair
-    progress: tuple[int, int] | None
+    # progress: tuple[int, int] | None
 
 
 class GitState(Enum):
@@ -222,25 +221,25 @@ def git_status(timeout: float = 3) -> GitStatus | None:
                 if line[1] in "DM":
                     unstaged = True
 
-    rebase_head: str | None = None
-    progress: tuple[int, int] | None = None
+    # rebase_head: str | None = None
+    # progress: tuple[int, int] | None = None
     if (git_dir / "rebase-merge").is_dir():
         state = GitState.REBASE_MERGING
-        rebase_head = cat(git_dir / "rebase-merge" / "head-name")
-        rebase_msgnum = cat(git_dir / "rebase-merge" / "msgnum")
-        assert rebase_msgnum is not None
-        rebase_end = cat(git_dir / "rebase-merge" / "end")
-        assert rebase_end is not None
-        progress = (int(rebase_msgnum), int(rebase_end))
+        # rebase_head = cat(git_dir / "rebase-merge" / "head-name")
+        # rebase_msgnum = cat(git_dir / "rebase-merge" / "msgnum")
+        # assert rebase_msgnum is not None
+        # rebase_end = cat(git_dir / "rebase-merge" / "end")
+        # assert rebase_end is not None
+        # progress = (int(rebase_msgnum), int(rebase_end))
     elif (git_dir / "rebase-apply").is_dir():
         state = GitState.REBASE_APPLYING
-        if (git_dir / "rebase-apply" / "rebasing").is_file():
-            rebase_head = cat(git_dir / "rebase-apply" / "head-name")
-        rebase_next = cat(git_dir / "rebase-apply" / "next")
-        assert rebase_next is not None
-        rebase_last = cat(git_dir / "rebase-apply" / "last")
-        assert rebase_last is not None
-        progress = (int(rebase_next), int(rebase_last))
+        # if (git_dir / "rebase-apply" / "rebasing").is_file():
+        #     rebase_head = cat(git_dir / "rebase-apply" / "head-name")
+        # rebase_next = cat(git_dir / "rebase-apply" / "next")
+        # assert rebase_next is not None
+        # rebase_last = cat(git_dir / "rebase-apply" / "last")
+        # assert rebase_last is not None
+        # progress = (int(rebase_next), int(rebase_last))
     elif (git_dir / "MERGE_HEAD").is_file():
         state = GitState.MERGING
     elif (git_dir / "CHERRY_PICK_HEAD").is_file():
@@ -264,8 +263,8 @@ def git_status(timeout: float = 3) -> GitStatus | None:
             untracked=untracked,
             conflict=conflict,
             state=state,
-            rebase_head=rebase_head,
-            progress=progress,
+            # rebase_head=rebase_head,
+            # progress=progress,
         ),
     )
 
