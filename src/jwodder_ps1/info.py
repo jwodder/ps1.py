@@ -7,7 +7,6 @@ import re
 import socket
 from .git import GitStatus, git_status
 from .style import Color, Styler
-from .util import cat
 
 #: Default maximum display length of the path to the current working directory
 MAX_CWD_LEN = 30
@@ -47,7 +46,12 @@ class PromptInfo:
         except (KeyError, FileNotFoundError):
             mail = False
 
-        debian_chroot = cat(Path("/etc/debian_chroot"))
+        try:
+            debian_chroot = (
+                Path("/etc/debian_chroot").read_text(encoding="utf-8").strip()
+            )
+        except FileNotFoundError:
+            debian_chroot = None
 
         conda_prompt_modifier = os.environ.get("CONDA_PROMPT_MODIFIER")
 

@@ -225,20 +225,18 @@ def git_status(timeout: float = 3) -> GitStatus | None:
     # progress: tuple[int, int] | None = None
     if (git_dir / "rebase-merge").is_dir():
         state = GitState.REBASE_MERGING
-        # rebase_head = cat(git_dir / "rebase-merge" / "head-name")
-        # rebase_msgnum = cat(git_dir / "rebase-merge" / "msgnum")
-        # assert rebase_msgnum is not None
-        # rebase_end = cat(git_dir / "rebase-merge" / "end")
-        # assert rebase_end is not None
+        # rbdir = git_dir / "rebase-merge"
+        # rebase_head = (rbdir / "head-name").read_text(encoding="utf-8").strip()
+        # rebase_msgnum = (rbdir / "msgnum").read_text(encoding="utf-8").strip()
+        # rebase_end = (rbdir / "end").read_text(encoding="utf-8").strip()
         # progress = (int(rebase_msgnum), int(rebase_end))
     elif (git_dir / "rebase-apply").is_dir():
         state = GitState.REBASE_APPLYING
-        # if (git_dir / "rebase-apply" / "rebasing").is_file():
-        #     rebase_head = cat(git_dir / "rebase-apply" / "head-name")
-        # rebase_next = cat(git_dir / "rebase-apply" / "next")
-        # assert rebase_next is not None
-        # rebase_last = cat(git_dir / "rebase-apply" / "last")
-        # assert rebase_last is not None
+        # rbdir = git_dir / "rebase-apply"
+        # if (rbdir / "rebasing").is_file():
+        #     rebase_head = (rbdir / "head-name").read_text(encoding="utf-8").strip()
+        # rebase_next = (rbdir / "next").read_text(encoding="utf-8").strip()
+        # rebase_last = (rbdir / "last").read_text(encoding="utf-8").strip()
         # progress = (int(rebase_next), int(rebase_last))
     elif (git_dir / "MERGE_HEAD").is_file():
         state = GitState.MERGING
