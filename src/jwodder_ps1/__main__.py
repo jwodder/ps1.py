@@ -1,3 +1,4 @@
+from __future__ import annotations
 import argparse
 from ast import literal_eval
 from enum import Enum
@@ -14,6 +15,7 @@ from subprocess import (
     run,
 )
 from types import SimpleNamespace
+from typing import ClassVar, Protocol
 from . import __url__, __version__
 
 #: Default maximum display length of the path to the current working directory
@@ -39,7 +41,7 @@ class Color(Enum):
     LIGHT_MAGENTA = 13
     LIGHT_CYAN = 14
 
-    def asfg(self):
+    def asfg(self) -> int:
         """
         Return the ANSI SGR parameter for setting the color as the foreground
         color
@@ -48,14 +50,21 @@ class Color(Enum):
         return c + 30 if c < 8 else c + 82
 
 
+class Styler(Protocol):
+    prompt_suffix: ClassVar[str]
+
+    def __call__(self, s: str, fg: Color | None = None, bold: bool = False) -> str:
+        ...
+
+
 class BashStyler:
     """Class for escaping & styling strings for use in Bash's PS1 variable"""
 
     #: The actual prompt symbol to add at the end of the output, just before a
     #: final space character
-    prompt_suffix = r"\$"
+    prompt_suffix: ClassVar[str] = r"\$"
 
-    def __call__(self, s, fg=None, bold=False):
+    def __call__(self, s: str, fg: Color | None = None, bold: bool = False) -> str:
         r"""
         Return the string ``s`` escaped for use in a PS1 variable.  If ``fg``
         is non-`None`, the string will be wrapped in the proper escape
@@ -79,7 +88,7 @@ class BashStyler:
             s = r"\[\e[1m\]{}\[\e[0m\]".format(s)
         return s
 
-    def escape(self, s):
+    def escape(self, s: str) -> str:
         """
         Escape characters in the string ``s`` that have special meaning in a
         PS1 variable
@@ -92,9 +101,9 @@ class ANSIStyler:
 
     #: The actual prompt symbol to add at the end of the output, just before a
     #: final space character
-    prompt_suffix = "$"
+    prompt_suffix: ClassVar[str] = "$"
 
-    def __call__(self, s, fg=None, bold=False):
+    def __call__(self, s: str, fg: Color | None = None, bold: bool = False) -> str:
         r"""
         Stylize the string ``s`` with ANSI escape sequences.  If ``fg`` is
         non-`None`, the string will be stylized with the given foreground
@@ -116,9 +125,9 @@ class ZshStyler:
 
     #: The actual prompt symbol to add at the end of the output, just before a
     #: final space character
-    prompt_suffix = "%#"
+    prompt_suffix: ClassVar[str] = "%#"
 
-    def __call__(self, s, fg=None, bold=False):
+    def __call__(self, s: str, fg: Color | None = None, bold: bool = False) -> str:
         """
         Return the string ``s`` escaped for use in a zsh PS1 variable.  If
         ``fg`` is non-`None`, the string will be wrapped in the proper escape
@@ -137,11 +146,11 @@ class ZshStyler:
             s = "%F{{{}}}{}%f".format(fg.value, s)
         return s
 
-    def escape(self, s):
+    def escape(self, s: str) -> str:
         return s.replace("%", "%%")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Yet another bash/zsh prompt script."
@@ -208,7 +217,9 @@ def main():
     print(s)
 
 
-def show_prompt_string(style, show_git=True, git_timeout=3):
+def show_prompt_string(
+    style: Styler, show_git: bool = True, git_timeout: float = 3
+) -> str:
     """
     Construct & return a complete prompt string for the current environment
     """
@@ -291,7 +302,7 @@ def show_prompt_string(style, show_git=True, git_timeout=3):
     return PS1
 
 
-def show_git_status(style, git_timeout=3):
+def show_git_status(style: Styler, git_timeout: float = 3) -> str:
     """
     Returns the portion of the prompt string (including the leading separator)
     dedicated to showing the status of the current Git repository.  If we are
@@ -339,7 +350,7 @@ def show_git_status(style, git_timeout=3):
     return p
 
 
-def cwdstr():
+def cwdstr() -> str:
     """
     Show the path to the current working directory.  If the directory is at or
     under :envvar:`HOME`, the path will start with ``~/``.  The path will also
@@ -354,7 +365,7 @@ def cwdstr():
     return shortpath(cwd)
 
 
-def shortpath(p: PurePath, max_len=MAX_CWD_LEN):
+def shortpath(p: PurePath, max_len: int = MAX_CWD_LEN) -> str:
     """
     If the filepath ``p`` is too long (longer than ``max_len``), cut off
     leading components to make it fit; if that's not enough, also truncate the
@@ -406,7 +417,7 @@ class GitState(Enum):
     BISECTING = "BSECT"
 
 
-def git_status(timeout=3):
+def git_status(timeout: float = 3) -> SimpleNamespace | None:
     """
     If the current directory is in a Git repository, ``git_status()`` returns
     an object with the following attributes:
@@ -470,10 +481,10 @@ def git_status(timeout=3):
     __ https://github.com/magicmonty/bash-git-prompt/blob/master/gitstatus.py
     """
 
-    git_dir = git("rev-parse", "--git-dir")
-    if git_dir is None:
+    git_dir_str = git("rev-parse", "--git-dir")
+    if git_dir_str is None:
         return None
-    git_dir = Path(git_dir)
+    git_dir = Path(git_dir_str)
 
     gs = SimpleNamespace()
     gs.head = cat(git_dir / "HEAD")
@@ -559,18 +570,20 @@ def git_status(timeout=3):
     if (git_dir / "rebase-merge").is_dir():
         gs.state = GitState.REBASE_MERGING
         gs.rebase_head = cat(git_dir / "rebase-merge" / "head-name")
-        gs.progress = (
-            int(cat(git_dir / "rebase-merge" / "msgnum")),
-            int(cat(git_dir / "rebase-merge" / "end")),
-        )
+        rebase_msgnum = cat(git_dir / "rebase-merge" / "msgnum")
+        assert rebase_msgnum is not None
+        rebase_end = cat(git_dir / "rebase-merge" / "end")
+        assert rebase_end is not None
+        gs.progress = (int(rebase_msgnum), int(rebase_end))
     elif (git_dir / "rebase-apply").is_dir():
         gs.state = GitState.REBASE_APPLYING
         if (git_dir / "rebase-apply" / "rebasing").is_file():
             gs.rebase_head = cat(git_dir / "rebase-apply" / "head-name")
-        gs.progress = (
-            int(cat(git_dir / "rebase-apply" / "next")),
-            int(cat(git_dir / "rebase-apply" / "last")),
-        )
+        rebase_next = cat(git_dir / "rebase-apply" / "next")
+        assert rebase_next is not None
+        rebase_last = cat(git_dir / "rebase-apply" / "last")
+        assert rebase_last is not None
+        gs.progress = (int(rebase_next), int(rebase_last))
     elif (git_dir / "MERGE_HEAD").is_file():
         gs.state = GitState.MERGING
     elif (git_dir / "CHERRY_PICK_HEAD").is_file():
@@ -585,7 +598,7 @@ def git_status(timeout=3):
     return gs
 
 
-def git(*args):
+def git(*args: str) -> str | None:
     """
     Run a Git command (suppressing stderr) and return its stdout with leading &
     trailing whitespace stripped.  If the command fails, return `None`.
@@ -600,7 +613,7 @@ def git(*args):
         return None
 
 
-def cat(path: Path):
+def cat(path: Path) -> str | None:
     """
     Return the contents of the given file with leading & trailing whitespace
     stripped.  If the file does not exist, return `None`.
