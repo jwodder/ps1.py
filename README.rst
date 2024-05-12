@@ -1,9 +1,9 @@
-|repostatus| |ci-status| |coverage| |license|
+|repostatus| |ci-status| |coverage| |pyversions| |license|
 
-.. |repostatus| image:: https://www.repostatus.org/badges/latest/wip.svg
-    :target: https://www.repostatus.org/#wip
-    :alt: Project Status: WIP — Initial development is in progress, but there
-          has not yet been a stable, usable release suitable for the public.
+.. |repostatus| image:: https://www.repostatus.org/badges/latest/active.svg
+    :target: https://www.repostatus.org/#active
+    :alt: Project Status: Active — The project has reached a stable, usable
+          state and is being actively developed.
 
 .. |ci-status| image:: https://github.com/jwodder/ps1.py/actions/workflows/test.yml/badge.svg
     :target: https://github.com/jwodder/ps1.py/actions/workflows/test.yml
@@ -12,11 +12,15 @@
 .. |coverage| image:: https://codecov.io/gh/jwodder/ps1.py/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/jwodder/ps1.py
 
+.. |pyversions| image:: https://img.shields.io/pypi/pyversions/jwodder-ps1.svg
+    :target: https://pypi.org/project/jwodder-ps1/
+
 .. |license| image:: https://img.shields.io/github/license/jwodder/ps1.py.svg
     :target: https://opensource.org/licenses/MIT
     :alt: MIT License
 
 `GitHub <https://github.com/jwodder/ps1.py>`_
+| `PyPI <https://pypi.org/project/jwodder-ps1/>`_
 | `Issues <https://github.com/jwodder/ps1.py/issues>`_
 
 ``jwodder-ps1`` is yet another program for Git-aware customization of the
