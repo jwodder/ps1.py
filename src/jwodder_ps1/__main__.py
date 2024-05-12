@@ -6,14 +6,7 @@ import os
 from pathlib import Path, PurePath
 import re
 import socket
-from subprocess import (
-    DEVNULL,
-    PIPE,
-    CalledProcessError,
-    TimeoutExpired,
-    check_output,
-    run,
-)
+import subprocess
 from types import SimpleNamespace
 from typing import ClassVar, Protocol
 from . import __url__, __version__
@@ -520,15 +513,15 @@ def git_status(timeout: float = 3) -> SimpleNamespace | None:
     gs.conflict = False
 
     try:
-        r = run(
+        r = subprocess.run(
             ["git", "status", "--porcelain", "--branch"],
-            stdout=PIPE,
-            stderr=DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
             check=True,
-            universal_newlines=True,
+            text=True,
             timeout=timeout,
         )
-    except TimeoutExpired:
+    except subprocess.TimeoutExpired:
         return None
 
     for line in r.stdout.strip().splitlines():
@@ -604,12 +597,14 @@ def git(*args: str) -> str | None:
     trailing whitespace stripped.  If the command fails, return `None`.
     """
     try:
-        return check_output(
-            ("git",) + args,
-            universal_newlines=True,
-            stderr=DEVNULL,
-        ).strip()
-    except CalledProcessError:
+        return subprocess.run(
+            ["git", *args],
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+        ).stdout.strip()
+    except subprocess.CalledProcessError:
         return None
 
 
