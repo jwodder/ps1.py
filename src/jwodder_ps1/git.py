@@ -1,10 +1,61 @@
 from __future__ import annotations
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 import re
 import subprocess
-from types import SimpleNamespace
 from .util import cat
+
+
+@dataclass
+class GitStatus:
+    #: A description of the repository's ``HEAD``: either the name of the
+    #: current branch (if any), or the name of the currently checked-out tag
+    #: (if any), or the short form of the current commit hash
+    head: str
+
+    #: `True` iff the repository is in a detached ``HEAD`` state
+    detached: bool
+
+    #: The number of commits by which ``HEAD`` is ahead of ``@{upstream}``, or
+    #: `None` if there is no upstream
+    ahead: int | None
+
+    #: The number of commits by which ``HEAD`` is behind ``@{upstream}``, or
+    #: `None` if there is no upstream
+    behind: int | None
+
+    #: Status of the repository's worktree; this is non-`None` iff the
+    #: repository is not a bare repository
+    wkt: WorkTreeStatus | None
+
+
+@dataclass
+class WorkTreeStatus:
+    #: `True` iff there are any stashed changes
+    stashed: bool
+
+    #: `True` iff there are changes staged to be committed
+    staged: bool
+
+    #: `True` iff there are unstaged changes in the working tree
+    unstaged: bool
+
+    #: `True` iff there are untracked files in the working tree
+    untracked: bool
+
+    #: `True` iff there are any paths in the working tree with merge conflicts
+    conflict: bool
+
+    #: The current state of the working tree, or `None` if there are no
+    #: rebases/bisections/etc. currently in progress
+    state: GitState | None
+
+    #: The name of the original branch when rebasing?
+    rebase_head: str | None
+
+    #: When rebasing, the current progress as a ``(current, total)`` pair
+    progress: tuple[int, int] | None
 
 
 class GitState(Enum):
@@ -22,60 +73,12 @@ class GitState(Enum):
     BISECTING = "BSECT"
 
 
-def git_status(timeout: float = 3) -> SimpleNamespace | None:
+def git_status(timeout: float = 3) -> GitStatus | None:
     """
     If the current directory is in a Git repository, ``git_status()`` returns
-    an object with the following attributes:
+    a `GitStatus` instance describing the repository's current state.
 
-    :var head: a description of the repository's ``HEAD``: either the name of
-        the current branch (if any), or the name of the currently checked-out
-        tag (if any), or the short form of the current commit hash
-    :vartype head: str
-
-    :var detached: `True` iff the repository is in detached ``HEAD`` state
-    :vartype detached: bool
-
-    :var ahead: the number of commits by which ``HEAD`` is ahead of
-        ``@{upstream}``, or `None` if there is no upstream
-    :vartype ahead: int or None
-
-    :var behind: the number of commits by which ``HEAD`` is behind
-        ``@{upstream}``, or `None` if there is no upstream
-    :vartype behind: int or None
-
-    :var bare: `True` iff the repository is a bare repository
-    :vartype bare: bool
-
-    The following attributes are only present when ``bare`` is `False`:
-
-    :var stashed: `True` iff there are any stashed changes
-    :vartype stashed: bool
-
-    :var staged: `True` iff there are changes staged to be committed
-    :vartype staged: bool
-
-    :var unstaged: `True` iff there are unstaged changes in the working tree
-    :vartype unstaged: bool
-
-    :var untracked: `True` iff there are untracked files in the working tree
-    :vartype untracked: bool
-
-    :var conflict: `True` iff there are any paths in the working tree with
-        merge conflicts
-    :vartype conflict: bool
-
-    :var state: the current state of the working tree, or `None` if there are
-        no rebases/bisections/etc. currently in progress
-    :vartype state: GitState or None
-
-    :var rebase_head: the name of the original branch when rebasing?
-    :vartype rebase_head: str or None
-
-    :var progress: when rebasing, the current progress as a ``(current, total)``
-        pair
-    :vartype progress: tuple(int, int) or None
-
-    If the current directory is *not* in a Git repository, or if the runtime of
+    If the current directory is not in a Git repository, or if the runtime of
     the ``git status`` command exceeds ``timeout``, ``git_status()`` returns
     `None`.
 
@@ -91,38 +94,44 @@ def git_status(timeout: float = 3) -> SimpleNamespace | None:
         return None
     git_dir = Path(git_dir_str)
 
-    gs = SimpleNamespace()
-    gs.head = cat(git_dir / "HEAD")
-    if gs.head is None:
-        gs.detached = False
-    elif gs.head.startswith("ref: "):
-        gs.head = re.sub(r"^(ref: )?(refs/heads/)?", "", gs.head)
-        gs.detached = False
+    head = (git_dir / "HEAD").read_text(encoding="utf-8").strip()
+    if head.startswith("ref: "):
+        head = re.sub(r"^(ref: )?(refs/heads/)?", "", head)
+        detached = False
     else:
-        gs.head = git("describe", "--tags", "--exact-match", "HEAD") or git(
+        head2 = git("describe", "--tags", "--exact-match", "HEAD") or git(
             "rev-parse", "--short", "HEAD"
         )
-        gs.detached = True
+        assert head2 is not None
+        head = head2
+        detached = True
 
-    gs.ahead = gs.behind = None
-    gs.bare = (
+    ahead: int | None = None
+    behind: int | None = None
+    bare = (
         git("rev-parse", "--is-bare-repository") == "true"
         or git("rev-parse", "--is-inside-work-tree") == "false"
     )
     # Note: The latter condition above actually means that we're inside a .git
     # directory, but that's similar enough to a bare repo that no one will
     # care.
-    if gs.bare:
+    if bare:
         delta = git("rev-list", "--count", "--left-right", "@{upstream}...HEAD")
         if delta is not None:
-            gs.behind, gs.ahead = map(int, delta.split())
-        return gs
+            behind, ahead = map(int, delta.split())
+        return GitStatus(
+            head=head,
+            detached=detached,
+            ahead=ahead,
+            behind=behind,
+            wkt=None,
+        )
 
-    gs.stashed = git("rev-parse", "--verify", "--quiet", "refs/stash") is not None
-    gs.staged = False
-    gs.unstaged = False
-    gs.untracked = False
-    gs.conflict = False
+    stashed = git("rev-parse", "--verify", "--quiet", "refs/stash") is not None
+    staged = False
+    unstaged = False
+    untracked = False
+    conflict = False
 
     try:
         r = subprocess.run(
@@ -156,51 +165,66 @@ def git_status(timeout: float = 3) -> SimpleNamespace | None:
             )
             if m:
                 if m.group("ahead") is not None:
-                    gs.ahead = int(m.group("ahead"))
+                    ahead = int(m.group("ahead"))
                 if m.group("behind") is not None:
-                    gs.behind = int(m.group("behind"))
+                    behind = int(m.group("behind"))
         elif line.startswith("??"):
-            gs.untracked = True
+            untracked = True
         elif not line.startswith("!!"):
             if "U" in line[:2]:
-                gs.conflict = True
+                conflict = True
             else:
                 if line[0] != " ":
-                    gs.staged = True
+                    staged = True
                 if line[1] in "DM":
-                    gs.unstaged = True
+                    unstaged = True
 
-    gs.rebase_head = None
-    gs.progress = None
+    rebase_head: str | None = None
+    progress: tuple[int, int] | None = None
     if (git_dir / "rebase-merge").is_dir():
-        gs.state = GitState.REBASE_MERGING
-        gs.rebase_head = cat(git_dir / "rebase-merge" / "head-name")
+        state = GitState.REBASE_MERGING
+        rebase_head = cat(git_dir / "rebase-merge" / "head-name")
         rebase_msgnum = cat(git_dir / "rebase-merge" / "msgnum")
         assert rebase_msgnum is not None
         rebase_end = cat(git_dir / "rebase-merge" / "end")
         assert rebase_end is not None
-        gs.progress = (int(rebase_msgnum), int(rebase_end))
+        progress = (int(rebase_msgnum), int(rebase_end))
     elif (git_dir / "rebase-apply").is_dir():
-        gs.state = GitState.REBASE_APPLYING
+        state = GitState.REBASE_APPLYING
         if (git_dir / "rebase-apply" / "rebasing").is_file():
-            gs.rebase_head = cat(git_dir / "rebase-apply" / "head-name")
+            rebase_head = cat(git_dir / "rebase-apply" / "head-name")
         rebase_next = cat(git_dir / "rebase-apply" / "next")
         assert rebase_next is not None
         rebase_last = cat(git_dir / "rebase-apply" / "last")
         assert rebase_last is not None
-        gs.progress = (int(rebase_next), int(rebase_last))
+        progress = (int(rebase_next), int(rebase_last))
     elif (git_dir / "MERGE_HEAD").is_file():
-        gs.state = GitState.MERGING
+        state = GitState.MERGING
     elif (git_dir / "CHERRY_PICK_HEAD").is_file():
-        gs.state = GitState.CHERRY_PICKING
+        state = GitState.CHERRY_PICKING
     elif (git_dir / "REVERT_HEAD").is_file():
-        gs.state = GitState.REVERTING
+        state = GitState.REVERTING
     elif (git_dir / "BISECT_LOG").is_file():
-        gs.state = GitState.BISECTING
+        state = GitState.BISECTING
     else:
-        gs.state = None
+        state = None
 
-    return gs
+    return GitStatus(
+        head=head,
+        detached=detached,
+        ahead=ahead,
+        behind=behind,
+        wkt=WorkTreeStatus(
+            stashed=stashed,
+            staged=staged,
+            unstaged=unstaged,
+            untracked=untracked,
+            conflict=conflict,
+            state=state,
+            rebase_head=rebase_head,
+            progress=progress,
+        ),
+    )
 
 
 def git(*args: str) -> str | None:

@@ -177,7 +177,7 @@ def show_git_status(style: Styler, git_timeout: float = 3) -> str:
         return ""
     # Start building the status string with the separator:
     p = style("@")
-    if not gs.bare and gs.stashed:
+    if gs.wkt is not None and gs.wkt.stashed:
         # We have stashed changes:
         p += style("+", fg=Color.LIGHT_YELLOW, bold=True)
     # Show HEAD; color changes depending on whether it's detached:
@@ -192,22 +192,22 @@ def show_git_status(style: Styler, git_timeout: float = 3) -> str:
     if gs.behind:
         # Show commits behind upstream:
         p += style(f"-{gs.behind}", fg=Color.RED)
-    if not gs.bare:
+    if (wkt := gs.wkt) is not None:
         # Show staged/unstaged status:
-        if gs.staged and gs.unstaged:
+        if wkt.staged and wkt.unstaged:
             p += style("*", fg=Color.LIGHT_YELLOW, bold=True)
-        elif gs.staged:
+        elif wkt.staged:
             p += style("*", fg=Color.GREEN)
-        elif gs.unstaged:
+        elif wkt.unstaged:
             p += style("*", fg=Color.RED)
         # else: Show nothing
-        if gs.untracked:
+        if wkt.untracked:
             # There are untracked files:
             p += style("+", fg=Color.RED, bold=True)
-        if gs.state is not None:
+        if wkt.state is not None:
             # The repository is in the middle of something special:
-            p += style("[" + gs.state.value + "]", fg=Color.MAGENTA)
-        if gs.conflict:
+            p += style("[" + wkt.state.value + "]", fg=Color.MAGENTA)
+        if wkt.conflict:
             # There are conflicted files:
             p += style("!", fg=Color.RED, bold=True)
     return p
