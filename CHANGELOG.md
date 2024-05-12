@@ -1,5 +1,5 @@
-v0.6.0 (in development)
------------------------
+v0.6.0 (2024-05-12)
+-------------------
 - Always open text files in UTF-8
 - If Git is not installed, the Git integration will now be automatically
   disabled instead of raising an error
