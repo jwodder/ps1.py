@@ -46,8 +46,7 @@ class Color(Enum):
 class Styler(Protocol):
     prompt_suffix: ClassVar[str]
 
-    def __call__(self, s: str, fg: Color | None = None, bold: bool = False) -> str:
-        ...
+    def __call__(self, s: str, fg: Color | None = None, bold: bool = False) -> str: ...
 
 
 class BashStyler:
