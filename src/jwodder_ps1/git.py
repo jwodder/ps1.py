@@ -4,6 +4,7 @@ from enum import Enum
 from pathlib import Path
 import re
 import subprocess
+from .style import Color, Styler
 from .util import cat
 
 
@@ -28,6 +29,44 @@ class GitStatus:
     #: Status of the repository's worktree; this is non-`None` iff the
     #: repository is not a bare repository
     wkt: WorkTreeStatus | None
+
+    def display(self, style: Styler) -> str:
+        # Start building the status string with the separator:
+        p = style("@")
+        if self.wkt is not None and self.wkt.stashed:
+            # We have stashed changes:
+            p += style("+", fg=Color.LIGHT_YELLOW, bold=True)
+        # Show HEAD; color changes depending on whether it's detached:
+        head_color = Color.LIGHT_BLUE if self.detached else Color.LIGHT_GREEN
+        p += style(self.head, fg=head_color)
+        if self.ahead:
+            # Show commits ahead of upstream:
+            p += style(f"+{self.ahead}", fg=Color.GREEN)
+            if self.behind:
+                # Ahead/behind separator:
+                p += style(",")
+        if self.behind:
+            # Show commits behind upstream:
+            p += style(f"-{self.behind}", fg=Color.RED)
+        if (wkt := self.wkt) is not None:
+            # Show staged/unstaged status:
+            if wkt.staged and wkt.unstaged:
+                p += style("*", fg=Color.LIGHT_YELLOW, bold=True)
+            elif wkt.staged:
+                p += style("*", fg=Color.GREEN)
+            elif wkt.unstaged:
+                p += style("*", fg=Color.RED)
+            # else: Show nothing
+            if wkt.untracked:
+                # There are untracked files:
+                p += style("+", fg=Color.RED, bold=True)
+            if wkt.state is not None:
+                # The repository is in the middle of something special:
+                p += style("[" + wkt.state.value + "]", fg=Color.MAGENTA)
+            if wkt.conflict:
+                # There are conflicted files:
+                p += style("!", fg=Color.RED, bold=True)
+        return p
 
 
 @dataclass
