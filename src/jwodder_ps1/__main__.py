@@ -1,152 +1,24 @@
 from __future__ import annotations
 import argparse
 from ast import literal_eval
-from enum import Enum
 import os
 from pathlib import Path, PurePath
 import re
 import socket
-import subprocess
-from types import SimpleNamespace
-from typing import ClassVar, Protocol
 from . import __url__, __version__
+from .git import git_status
+from .style import ANSIStyler, BashStyler, Color, Styler, ZshStyler
+from .util import cat
 
 #: Default maximum display length of the path to the current working directory
 MAX_CWD_LEN = 30
-
-
-class Color(Enum):
-    """
-    An enum of the supported foreground colors.  Each color's value equals its
-    xterm number.
-    """
-
-    RED = 1
-    GREEN = 2
-    YELLOW = 3
-    BLUE = 4
-    MAGENTA = 5
-    CYAN = 6
-    LIGHT_RED = 9
-    LIGHT_GREEN = 10
-    LIGHT_YELLOW = 11
-    LIGHT_BLUE = 12
-    LIGHT_MAGENTA = 13
-    LIGHT_CYAN = 14
-
-    def asfg(self) -> int:
-        """
-        Return the ANSI SGR parameter for setting the color as the foreground
-        color
-        """
-        c = self.value
-        return c + 30 if c < 8 else c + 82
-
-
-class Styler(Protocol):
-    prompt_suffix: ClassVar[str]
-
-    def __call__(self, s: str, fg: Color | None = None, bold: bool = False) -> str: ...
-
-
-class BashStyler:
-    """Class for escaping & styling strings for use in Bash's PS1 variable"""
-
-    #: The actual prompt symbol to add at the end of the output, just before a
-    #: final space character
-    prompt_suffix: ClassVar[str] = r"\$"
-
-    def __call__(self, s: str, fg: Color | None = None, bold: bool = False) -> str:
-        r"""
-        Return the string ``s`` escaped for use in a PS1 variable.  If ``fg``
-        is non-`None`, the string will be wrapped in the proper escape
-        sequences to display it as the given foreground color.  If ``bold`` is
-        true, the string will be wrapped in the proper escape sequences to
-        display it bold.  All escape sequences are wrapped in ``\[ ... \]`` so
-        that they may be used in a PS1 variable.
-
-        :param str s: the string to stylize
-        :param Color fg: the foreground color to stylize the string with
-        :param bool bold: whether to stylize the string as bold
-        """
-        s = self.escape(s)
-        if fg is not None:
-            s = r"\[\e[{}{}m\]{}\[\e[0m\]".format(
-                fg.asfg(),
-                ";1" if bold else "",
-                s,
-            )
-        elif bold:
-            s = r"\[\e[1m\]{}\[\e[0m\]".format(s)
-        return s
-
-    def escape(self, s: str) -> str:
-        """
-        Escape characters in the string ``s`` that have special meaning in a
-        PS1 variable
-        """
-        return s.replace("\\", r"\\")
-
-
-class ANSIStyler:
-    """Class for styling strings for display immediately in the terminal"""
-
-    #: The actual prompt symbol to add at the end of the output, just before a
-    #: final space character
-    prompt_suffix: ClassVar[str] = "$"
-
-    def __call__(self, s: str, fg: Color | None = None, bold: bool = False) -> str:
-        r"""
-        Stylize the string ``s`` with ANSI escape sequences.  If ``fg`` is
-        non-`None`, the string will be stylized with the given foreground
-        color.  If ``bold`` is true, the string will be stylized bold.
-
-        :param str s: the string to stylize
-        :param Color fg: the foreground color to stylize the string with
-        :param bool bold: whether to stylize the string as bold
-        """
-        if fg is not None:
-            s = "\033[{}{}m{}\033[0m".format(fg.asfg(), ";1" if bold else "", s)
-        elif bold:
-            s = "\033[1m{}\033[0m".format(s)
-        return s
-
-
-class ZshStyler:
-    """Class for escaping & styling strings for use in zsh's PS1 variable"""
-
-    #: The actual prompt symbol to add at the end of the output, just before a
-    #: final space character
-    prompt_suffix: ClassVar[str] = "%#"
-
-    def __call__(self, s: str, fg: Color | None = None, bold: bool = False) -> str:
-        """
-        Return the string ``s`` escaped for use in a zsh PS1 variable.  If
-        ``fg`` is non-`None`, the string will be wrapped in the proper escape
-        sequences to display it as the given foreground color.  If ``bold`` is
-        true, the string will be wrapped in the proper escape sequences to
-        display it bold.
-
-        :param str s: the string to stylize
-        :param Color fg: the foreground color to stylize the string with
-        :param bool bold: whether to stylize the string as bold
-        """
-        s = self.escape(s)
-        if bold:
-            s = "%B{}%b".format(s)
-        if fg is not None:
-            s = "%F{{{}}}{}%f".format(fg.value, s)
-        return s
-
-    def escape(self, s: str) -> str:
-        return s.replace("%", "%%")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Yet another bash/zsh prompt script."
-            "  Visit <{}> for more information.".format(__url__)
+            f"  Visit <{__url__}> for more information."
         )
     )
     parser.add_argument(
@@ -190,7 +62,7 @@ def main() -> None:
         "-V",
         "--version",
         action="version",
-        version="%(prog)s {}".format(__version__),
+        version=f"%(prog)s {__version__}",
     )
     parser.add_argument(
         "git_flag", nargs="?", help='Set to "off" to disable Git integration'
@@ -229,7 +101,7 @@ def show_prompt_string(
     # Show the chroot we're working in (if any):
     debian_chroot = cat(Path("/etc/debian_chroot"))
     if debian_chroot:
-        PS1 += style("[{}] ".format(debian_chroot), fg=Color.BLUE, bold=True)
+        PS1 += style(f"[{debian_chroot}] ", fg=Color.BLUE, bold=True)
 
     # If a Conda environment is active, show its prompt prefix (which already
     # includes the parentheses and trailing space).
@@ -246,8 +118,7 @@ def show_prompt_string(
             with (venv / "pyvenv.cfg").open(encoding="utf-8") as fp:
                 for line in fp:
                     line = line.strip()
-                    m = re.match(r"^prompt\s*=\s*", line)
-                    if m:
+                    if m := re.match(r"^prompt\s*=\s*", line):
                         prompt = line[m.end() :]
                         if re.fullmatch(r'([\x27"]).*\1', prompt):
                             # repr-ized prompt produced by venv
@@ -258,7 +129,7 @@ def show_prompt_string(
                         break
         except FileNotFoundError:
             pass
-        PS1 += style("({}) ".format(prompt))
+        PS1 += style(f"({prompt}) ")
 
     # Show the username of the current user.  I know who I am, so I don't need
     # to see this, but the code is left in here as an example in case you want
@@ -289,7 +160,7 @@ def show_prompt_string(
     # If your terminal emulator supports it, it's also possible to set the
     # title of the terminal window by emitting "\[\e]0;$TITLE\a\]" somewhere in
     # the prompt.  Here's an example that sets the title to `username@host`:
-    # PS1 += r'\[\e]0;{}@{}\a\]'.format(os.getlogin(), socket.gethostname())
+    # PS1 += fr"\[\e]0;{os.getlogin()}@{socket.gethostname()}\a\]"
 
     return PS1
 
@@ -314,13 +185,13 @@ def show_git_status(style: Styler, git_timeout: float = 3) -> str:
     p += style(gs.head, fg=head_color)
     if gs.ahead:
         # Show commits ahead of upstream:
-        p += style("+{}".format(gs.ahead), fg=Color.GREEN)
+        p += style(f"+{gs.ahead}", fg=Color.GREEN)
         if gs.behind:
             # Ahead/behind separator:
             p += style(",")
     if gs.behind:
         # Show commits behind upstream:
-        p += style("-{}".format(gs.behind), fg=Color.RED)
+        p += style(f"-{gs.behind}", fg=Color.RED)
     if not gs.bare:
         # Show staged/unstaged status:
         if gs.staged and gs.unstaged:
@@ -392,230 +263,6 @@ def shortpath(p: PurePath, max_len: int = MAX_CWD_LEN) -> str:
                 p = PurePath("…", p.parts[1][: max_len - 3] + "…")
                 assert len(str(p)) <= max_len
     return str(p)
-
-
-class GitState(Enum):
-    """
-    Represents the various "in progress" states that a Git repository can be
-    in.  The value of each enumeration is a short string for displaying in a
-    command prompt.
-    """
-
-    REBASE_MERGING = "REBAS"
-    REBASE_APPLYING = "REBAS"
-    MERGING = "MERGE"
-    CHERRY_PICKING = "CHYPK"
-    REVERTING = "REVRT"
-    BISECTING = "BSECT"
-
-
-def git_status(timeout: float = 3) -> SimpleNamespace | None:
-    """
-    If the current directory is in a Git repository, ``git_status()`` returns
-    an object with the following attributes:
-
-    :var head: a description of the repository's ``HEAD``: either the name of
-        the current branch (if any), or the name of the currently checked-out
-        tag (if any), or the short form of the current commit hash
-    :vartype head: str
-
-    :var detached: `True` iff the repository is in detached ``HEAD`` state
-    :vartype detached: bool
-
-    :var ahead: the number of commits by which ``HEAD`` is ahead of
-        ``@{upstream}``, or `None` if there is no upstream
-    :vartype ahead: int or None
-
-    :var behind: the number of commits by which ``HEAD`` is behind
-        ``@{upstream}``, or `None` if there is no upstream
-    :vartype behind: int or None
-
-    :var bare: `True` iff the repository is a bare repository
-    :vartype bare: bool
-
-    The following attributes are only present when ``bare`` is `False`:
-
-    :var stashed: `True` iff there are any stashed changes
-    :vartype stashed: bool
-
-    :var staged: `True` iff there are changes staged to be committed
-    :vartype staged: bool
-
-    :var unstaged: `True` iff there are unstaged changes in the working tree
-    :vartype unstaged: bool
-
-    :var untracked: `True` iff there are untracked files in the working tree
-    :vartype untracked: bool
-
-    :var conflict: `True` iff there are any paths in the working tree with
-        merge conflicts
-    :vartype conflict: bool
-
-    :var state: the current state of the working tree, or `None` if there are
-        no rebases/bisections/etc. currently in progress
-    :vartype state: GitState or None
-
-    :var rebase_head: the name of the original branch when rebasing?
-    :vartype rebase_head: str or None
-
-    :var progress: when rebasing, the current progress as a ``(current, total)``
-        pair
-    :vartype progress: tuple(int, int) or None
-
-    If the current directory is *not* in a Git repository, or if the runtime of
-    the ``git status`` command exceeds ``timeout``, ``git_status()`` returns
-    `None`.
-
-    This function is based on a combination of Git's `git-prompt.sh`__ and
-    magicmonty's bash-git-prompt__.
-
-    __ https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh
-    __ https://github.com/magicmonty/bash-git-prompt/blob/master/gitstatus.py
-    """
-
-    git_dir_str = git("rev-parse", "--git-dir")
-    if git_dir_str is None:
-        return None
-    git_dir = Path(git_dir_str)
-
-    gs = SimpleNamespace()
-    gs.head = cat(git_dir / "HEAD")
-    if gs.head is None:
-        gs.detached = False
-    elif gs.head.startswith("ref: "):
-        gs.head = re.sub(r"^(ref: )?(refs/heads/)?", "", gs.head)
-        gs.detached = False
-    else:
-        gs.head = git("describe", "--tags", "--exact-match", "HEAD") or git(
-            "rev-parse", "--short", "HEAD"
-        )
-        gs.detached = True
-
-    gs.ahead = gs.behind = None
-    gs.bare = (
-        git("rev-parse", "--is-bare-repository") == "true"
-        or git("rev-parse", "--is-inside-work-tree") == "false"
-    )
-    # Note: The latter condition above actually means that we're inside a .git
-    # directory, but that's similar enough to a bare repo that no one will
-    # care.
-    if gs.bare:
-        delta = git("rev-list", "--count", "--left-right", "@{upstream}...HEAD")
-        if delta is not None:
-            gs.behind, gs.ahead = map(int, delta.split())
-        return gs
-
-    gs.stashed = git("rev-parse", "--verify", "--quiet", "refs/stash") is not None
-    gs.staged = False
-    gs.unstaged = False
-    gs.untracked = False
-    gs.conflict = False
-
-    try:
-        r = subprocess.run(
-            ["git", "status", "--porcelain", "--branch"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            check=True,
-            text=True,
-            timeout=timeout,
-        )
-    except subprocess.TimeoutExpired:
-        return None
-
-    for line in r.stdout.strip().splitlines():
-        if line.startswith("##"):
-            m = re.fullmatch(
-                r"""
-                \#\#\s*(?:(?:Initial commit|No commits yet) on )?
-                (?P<branch>(?:[^\s.]|\.(?!\.))+)
-                (?:\.\.\.\S+
-                    (?:
-                        \s*\[
-                            (?:ahead\s*(?P<ahead>\d+))?
-                            (?:(?(ahead)[,\s]+)behind\s*(?P<behind>\d+))?
-                        \]
-                    )?
-                )?\s*
-            """,
-                line,
-                flags=re.X,
-            )
-            if m:
-                if m.group("ahead") is not None:
-                    gs.ahead = int(m.group("ahead"))
-                if m.group("behind") is not None:
-                    gs.behind = int(m.group("behind"))
-        elif line.startswith("??"):
-            gs.untracked = True
-        elif not line.startswith("!!"):
-            if "U" in line[:2]:
-                gs.conflict = True
-            else:
-                if line[0] != " ":
-                    gs.staged = True
-                if line[1] in "DM":
-                    gs.unstaged = True
-
-    gs.rebase_head = None
-    gs.progress = None
-    if (git_dir / "rebase-merge").is_dir():
-        gs.state = GitState.REBASE_MERGING
-        gs.rebase_head = cat(git_dir / "rebase-merge" / "head-name")
-        rebase_msgnum = cat(git_dir / "rebase-merge" / "msgnum")
-        assert rebase_msgnum is not None
-        rebase_end = cat(git_dir / "rebase-merge" / "end")
-        assert rebase_end is not None
-        gs.progress = (int(rebase_msgnum), int(rebase_end))
-    elif (git_dir / "rebase-apply").is_dir():
-        gs.state = GitState.REBASE_APPLYING
-        if (git_dir / "rebase-apply" / "rebasing").is_file():
-            gs.rebase_head = cat(git_dir / "rebase-apply" / "head-name")
-        rebase_next = cat(git_dir / "rebase-apply" / "next")
-        assert rebase_next is not None
-        rebase_last = cat(git_dir / "rebase-apply" / "last")
-        assert rebase_last is not None
-        gs.progress = (int(rebase_next), int(rebase_last))
-    elif (git_dir / "MERGE_HEAD").is_file():
-        gs.state = GitState.MERGING
-    elif (git_dir / "CHERRY_PICK_HEAD").is_file():
-        gs.state = GitState.CHERRY_PICKING
-    elif (git_dir / "REVERT_HEAD").is_file():
-        gs.state = GitState.REVERTING
-    elif (git_dir / "BISECT_LOG").is_file():
-        gs.state = GitState.BISECTING
-    else:
-        gs.state = None
-
-    return gs
-
-
-def git(*args: str) -> str | None:
-    """
-    Run a Git command (suppressing stderr) and return its stdout with leading &
-    trailing whitespace stripped.  If the command fails, return `None`.
-    """
-    try:
-        return subprocess.run(
-            ["git", *args],
-            check=True,
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-        ).stdout.strip()
-    except subprocess.CalledProcessError:
-        return None
-
-
-def cat(path: Path) -> str | None:
-    """
-    Return the contents of the given file with leading & trailing whitespace
-    stripped.  If the file does not exist, return `None`.
-    """
-    try:
-        return path.read_text(encoding="utf-8").strip()
-    except FileNotFoundError:
-        return None
 
 
 if __name__ == "__main__":
