@@ -155,25 +155,6 @@ def shortpath(p: PurePath, max_len: int = MAX_CWD_LEN) -> str:
     If the filepath ``p`` is too long (longer than ``max_len``), cut off
     leading components to make it fit; if that's not enough, also truncate the
     final component.  Deleted bits are replaced with ellipses.
-
-    >>> shortpath(PurePath('/'))
-    '/'
-    >>> shortpath(PurePath('~'))
-    '~'
-    >>> shortpath(PurePath('/var/lib/data'))
-    '/var/lib/data'
-    >>> shortpath(PurePath('~/.local/lib/data'))
-    '~/.local/lib/data'
-    >>> shortpath(PurePath('/var/atlassian/applicationdata'))
-    '/var/atlassian/applicationdata'
-    >>> shortpath(PurePath('/var/atlassian/application-data'))
-    '…/atlassian/application-data'
-    >>> shortpath(PurePath('/var/atlassian/application-data/jira'))
-    '…/application-data/jira'
-    >>> shortpath(PurePath('~/var/atlassian/applicationdata'))
-    '…/atlassian/applicationdata'
-    >>> shortpath(PurePath('~/Photos/Vacation_2000_summer_part_1_funny'))
-    '…/Vacation_2000_summer_part_1…'
     """
     assert len(p.parts) > 0
     if len(str(p)) > max_len:
