@@ -1,65 +1,81 @@
-Here we have yet another script for Git-aware customization of the command
-prompt in Bash and zsh.  Unlike all the other scripts, I wrote this one, so
+|repostatus| |ci-status| |coverage| |license|
+
+.. |repostatus| image:: https://www.repostatus.org/badges/latest/wip.svg
+    :target: https://www.repostatus.org/#wip
+    :alt: Project Status: WIP — Initial development is in progress, but there
+          has not yet been a stable, usable release suitable for the public.
+
+.. |ci-status| image:: https://github.com/jwodder/ps1.py/actions/workflows/test.yml/badge.svg
+    :target: https://github.com/jwodder/ps1.py/actions/workflows/test.yml
+    :alt: CI Status
+
+.. |coverage| image:: https://codecov.io/gh/jwodder/ps1.py/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/jwodder/ps1.py
+
+.. |license| image:: https://img.shields.io/github/license/jwodder/ps1.py.svg
+    :target: https://opensource.org/licenses/MIT
+    :alt: MIT License
+
+`GitHub <https://github.com/jwodder/ps1.py>`_
+| `Issues <https://github.com/jwodder/ps1.py/issues>`_
+
+``jwodder-ps1`` is yet another program for Git-aware customization of the
+command prompt in Bash and zsh.  Unlike all the others, I wrote this one, so
 it's better.
 
-.. image:: screenshot.png
+.. image:: https://github.com/jwodder/ps1.py/raw/master/screenshot.png
 
 Features:
 
-- lets you know if you have mail in ``$MAIL``
-- shows chroot, `virtualenv <https://virtualenv.pypa.io>`_, and `Conda
+- Lets you know if you have mail in ``$MAIL``
+- Shows chroot, `virtualenv <https://virtualenv.pypa.io>`_, and `Conda
   <https://conda.io>`_ environment prompt prefixes
-- automatically truncates the current directory path if it gets too long
-- shows the status of the current Git repository (see below)
-- thoroughly documented and easily customizable
-- supports both Bash and zsh
-- can optionally output just the Git status, in case you want to combine it
+- Automatically truncates the current directory path if it gets too long
+- Shows the status of the current Git repository (see below)
+- Supports both Bash and zsh
+- Can optionally output just the Git status, in case you want to combine it
   with your own prompt string
-
-
-Requirements
-============
-
-- Python 3, version 3.5 or higher
-- Git, version 1.7.10 or higher
-- bash or zsh
 
 
 Installation & Setup
 ====================
 
-1. Save `ps1.py <ps1.py>`_ to your computer somewhere (I put my copy at
-   ``~/share/ps1.py``)
+``jwodder-ps1`` requires Python 3.8 or higher.  You'll also need a Bash or zsh
+shell to set the program up in, and you'll need ``git`` v1.7.10+ installed in
+order to get status information about Git repositories.
 
-2. If using Bash, add the following line to the end of your ``~/.bashrc``:
+Install the ``jwodder-ps1`` command by using `pip <https://pip.pypa.io>`_ or
+similar (using `pipx <https://pipx.pypa.io>`_ is recommended) to install the
+package of the same name from PyPI.
 
-   .. code:: shell
+If you use Bash, configure it to use ``jwodder-ps1`` for the prompt by adding
+the following line to the end of your ``~/.bashrc``:
 
-        PROMPT_COMMAND="$PROMPT_COMMAND"'; PS1="$(/usr/bin/python3 ~/share/ps1.py "${PS1_GIT:-}")"'
+.. code:: shell
 
-   If using zsh, add the following to the end of your ``~/.zshrc``:
+    PROMPT_COMMAND="$PROMPT_COMMAND"'; PS1="$(jwodder-ps1 "${PS1_GIT:-}")"'
 
-   .. code:: shell
+If you use zsh instead, add the following to the end of your ``~/.zshrc``:
 
-        precmd_ps1_py() { PS1="$(/usr/bin/python3 ~/share/ps1.py --zsh "${PS1_GIT:-}")" }
-        precmd_functions+=( precmd_ps1_py )
+.. code:: shell
 
-   If you want to use just the Git status portion of the script's output and
-   combine it with your own prompt string, replace the ``PS1`` assignment with
-   your desired prompt, with ``$(/usr/bin/python3 ~/share/ps1.py --git-only
-   "${PS1_GIT:-}")`` inserted where you want the Git status string.
+    precmd_jwodder_ps1() { PS1="$(jwodder-ps1 --zsh "${PS1_GIT:-}")" }
+    precmd_functions+=( precmd_jwodder_ps1 )
 
-   Replace ``/usr/bin/python3`` with the path to your Python 3 interpreter, and
-   replace ``~/share/ps1.py`` with the location you saved ``ps1.py`` at as
-   appropriate.
+If you want to use just the Git status portion of the script's output and
+combine it with your own prompt string, replace the ``PS1`` assignment with
+your desired prompt, with ``$(jwodder-ps1 --git-only "${PS1_GIT:-}")`` inserted
+where you want the Git status string.
 
-3. Open a new shell
+Depending on how ``jwodder-ps1`` was installed and what the value of your
+``PATH`` is, you may have to use the full path to the ``jwodder-ps1``
+executable instead.
 
-4. Enjoy!
+Once ``jwodder-ps1`` is configured, open a new shell and enjoy!
 
-5. If the Git integration causes you trouble (either because something breaks
-   or just because it's taking too long to run), it can be temporarily disabled
-   by running ``PS1_GIT=off`` on the command line.
+If the Git integration causes you trouble (either because something breaks or
+just because it's taking too long to run), it can be temporarily disabled by
+running ``PS1_GIT=off`` on the command line.
 
 
 Usage
@@ -67,16 +83,16 @@ Usage
 
 ::
 
-    python3 ps1.py [<options>] [<git flag>]
+    jwodder-ps1 [<options>] [<git flag>]
 
-``ps1.py`` outputs a single line containing a stylized prompt string for the
-current directory.  By default, the stylization is in a format usable in Bash's
-``PS1`` variable, though the ``--ansi`` and ``--zsh`` option can be supplied to
-change the format.
+The ``jwodder-ps1`` command outputs a single line containing a stylized prompt
+string for the current directory.  By default, the stylization is in a format
+usable in Bash's ``PS1`` variable, though the ``--ansi`` and ``--zsh`` option
+can be supplied to change the format.
 
-``ps1.py`` takes a single optional argument.  If this argument is "off", then
-the Git integration is disabled.  If it is any other value or not specified,
-the Git integration is enabled.
+``jwodder-ps1`` takes a single optional argument.  If this argument is "off",
+then the Git integration is disabled.  If it is any other value or not
+specified, the Git integration is enabled.
 
 Options
 -------
