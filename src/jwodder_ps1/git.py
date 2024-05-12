@@ -117,9 +117,9 @@ def git_status(timeout: float = 3) -> GitStatus | None:
     If the current directory is in a Git repository, ``git_status()`` returns
     a `GitStatus` instance describing the repository's current state.
 
-    If the current directory is not in a Git repository, or if the runtime of
-    the ``git status`` command exceeds ``timeout``, ``git_status()`` returns
-    `None`.
+    If the current directory is not in a Git repository, or if Git is not
+    installed, or or if the runtime of the ``git status`` command exceeds
+    ``timeout``, ``git_status()`` returns `None`.
 
     This function is based on a combination of Git's `git-prompt.sh`__ and
     magicmonty's bash-git-prompt__.
@@ -128,7 +128,11 @@ def git_status(timeout: float = 3) -> GitStatus | None:
     __ https://github.com/magicmonty/bash-git-prompt/blob/master/gitstatus.py
     """
 
-    git_dir_str = git("rev-parse", "--git-dir")
+    try:
+        git_dir_str = git("rev-parse", "--git-dir")
+    except FileNotFoundError:
+        # Git is not installed
+        return None
     if git_dir_str is None:
         return None
     git_dir = Path(git_dir_str)
