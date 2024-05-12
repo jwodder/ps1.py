@@ -14,9 +14,7 @@ def test_display_simple_prompt_info_ansi() -> None:
         cwdstr="~/work",
         git=None,
     )
-    assert (
-        info.display(ANSIStyler()) == "\x1B[91mfirefly\x1B[0m:\x1B[96m~/work\x1B[0m$ "
-    )
+    assert info.display(ANSIStyler()) == "\x1B[91mfirefly\x1B[m:\x1B[96m~/work\x1B[m$ "
 
 
 def test_display_full_prompt_info_ansi() -> None:
@@ -30,12 +28,12 @@ def test_display_full_prompt_info_ansi() -> None:
         git=None,
     )
     assert info.display(ANSIStyler()) == (
-        "\x1B[36;1m[MAIL] \x1B[0m"
-        "\x1B[34;1m[/chroot/jail] \x1B[0m"
-        "\x1B[92m(base) \x1B[0m"
+        "\x1B[36;1m[MAIL] \x1B[m"
+        "\x1B[34;1m[/chroot/jail] \x1B[m"
+        "\x1B[92m(base) \x1B[m"
         "(venv) "
-        "\x1B[91mfirefly\x1B[0m:"
-        "\x1B[96m~/work\x1B[0m$ "
+        "\x1B[91mfirefly\x1B[m:"
+        "\x1B[96m~/work\x1B[m$ "
     )
 
 
@@ -66,5 +64,5 @@ def test_display_simple_prompt_info_with_git_ansi() -> None:
     )
     assert (
         info.display(ANSIStyler())
-        == "\x1B[91mfirefly\x1B[0m:\x1B[96m~/work\x1B[0m@\x1B[92mmain\x1B[0m$ "
+        == "\x1B[91mfirefly\x1B[m:\x1B[96m~/work\x1B[m@\x1B[92mmain\x1B[m$ "
     )

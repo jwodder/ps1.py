@@ -59,9 +59,9 @@ class BashStyler:
         """
         s = self.escape(s)
         if fg is not None:
-            s = rf"\[\e[{fg.asfg()}{'1' if bold else ''}m\]{s}\[\e[0m\]"
+            s = rf"\[\e[{fg.asfg()}{'1' if bold else ''}m\]{s}\[\e[m\]"
         elif bold:
-            s = rf"\[\e[1m\]{s}\[\e[0m\]"
+            s = rf"\[\e[1m\]{s}\[\e[m\]"
         return s
 
     def escape(self, s: str) -> str:
@@ -90,9 +90,9 @@ class ANSIStyler:
         :param bool bold: whether to stylize the string as bold
         """
         if fg is not None:
-            s = f"\033[{fg.asfg()}{';1' if bold else ''}m{s}\033[0m"
+            s = f"\x1B[{fg.asfg()}{';1' if bold else ''}m{s}\x1B[m"
         elif bold:
-            s = f"\033[1m{s}\033[0m"
+            s = f"\x1B[1m{s}\x1B[m"
         return s
 
 

@@ -15,7 +15,7 @@ from jwodder_ps1.style import ANSIStyler
                 behind=None,
                 wkt=None,
             ),
-            "@\x1B[92mmain\x1B[0m",
+            "@\x1B[92mmain\x1B[m",
             id="simple-bare",
         ),
         pytest.param(
@@ -26,7 +26,7 @@ from jwodder_ps1.style import ANSIStyler
                 behind=None,
                 wkt=None,
             ),
-            "@\x1B[94mv0.1.0\x1B[0m",
+            "@\x1B[94mv0.1.0\x1B[m",
             id="detached-bare",
         ),
         pytest.param(
@@ -37,7 +37,7 @@ from jwodder_ps1.style import ANSIStyler
                 behind=None,
                 wkt=None,
             ),
-            "@\x1B[92mmain\x1B[0m\x1B[32m+1\x1B[0m",
+            "@\x1B[92mmain\x1B[m\x1B[32m+1\x1B[m",
             id="ahead-bare",
         ),
         pytest.param(
@@ -48,7 +48,7 @@ from jwodder_ps1.style import ANSIStyler
                 behind=2,
                 wkt=None,
             ),
-            "@\x1B[92mmain\x1B[0m\x1B[31m-2\x1B[0m",
+            "@\x1B[92mmain\x1B[m\x1B[31m-2\x1B[m",
             id="behind-bare",
         ),
         pytest.param(
@@ -59,7 +59,7 @@ from jwodder_ps1.style import ANSIStyler
                 behind=2,
                 wkt=None,
             ),
-            "@\x1B[92mmain\x1B[0m\x1B[32m+1\x1B[0m,\x1B[31m-2\x1B[0m",
+            "@\x1B[92mmain\x1B[m\x1B[32m+1\x1B[m,\x1B[31m-2\x1B[m",
             id="ahead-behind-bare",
         ),
         pytest.param(
@@ -79,7 +79,7 @@ from jwodder_ps1.style import ANSIStyler
                     progress=None,
                 ),
             ),
-            "@\x1B[92mmain\x1B[0m",
+            "@\x1B[92mmain\x1B[m",
             id="simple",
         ),
         pytest.param(
@@ -99,7 +99,7 @@ from jwodder_ps1.style import ANSIStyler
                     progress=None,
                 ),
             ),
-            "@\x1B[92mmain\x1B[0m\x1B[32m*\x1B[0m",
+            "@\x1B[92mmain\x1B[m\x1B[32m*\x1B[m",
             id="staged",
         ),
         pytest.param(
@@ -119,7 +119,7 @@ from jwodder_ps1.style import ANSIStyler
                     progress=None,
                 ),
             ),
-            "@\x1B[92mmain\x1B[0m\x1B[31m*\x1B[0m",
+            "@\x1B[92mmain\x1B[m\x1B[31m*\x1B[m",
             id="unstaged",
         ),
         pytest.param(
@@ -139,7 +139,7 @@ from jwodder_ps1.style import ANSIStyler
                     progress=None,
                 ),
             ),
-            "@\x1B[92mmain\x1B[0m\x1B[93;1m*\x1B[0m",
+            "@\x1B[92mmain\x1B[m\x1B[93;1m*\x1B[m",
             id="staged-unstaged",
         ),
         pytest.param(
@@ -159,7 +159,7 @@ from jwodder_ps1.style import ANSIStyler
                     progress=None,
                 ),
             ),
-            "@\x1B[93;1m+\x1B[0m\x1B[92mmain\x1B[0m",
+            "@\x1B[93;1m+\x1B[m\x1B[92mmain\x1B[m",
             id="stashed",
         ),
         pytest.param(
@@ -179,7 +179,7 @@ from jwodder_ps1.style import ANSIStyler
                     progress=None,
                 ),
             ),
-            "@\x1B[92mmain\x1B[0m\x1B[31;1m+\x1B[0m",
+            "@\x1B[92mmain\x1B[m\x1B[31;1m+\x1B[m",
             id="untracked",
         ),
         pytest.param(
@@ -199,7 +199,7 @@ from jwodder_ps1.style import ANSIStyler
                     progress=None,
                 ),
             ),
-            "@\x1B[93;1m+\x1B[0m\x1B[92mmain\x1B[0m\x1B[31m*\x1B[0m\x1B[31;1m+\x1B[0m",
+            "@\x1B[93;1m+\x1B[m\x1B[92mmain\x1B[m\x1B[31m*\x1B[m\x1B[31;1m+\x1B[m",
             id="stashed-unstaged-untracked",
         ),
         pytest.param(
@@ -220,10 +220,10 @@ from jwodder_ps1.style import ANSIStyler
                 ),
             ),
             (
-                "@\x1B[93;1m+\x1B[0m"
-                "\x1B[92mmain\x1B[0m"
-                "\x1B[32m+3\x1B[0m"
-                "\x1B[32m*\x1B[0m"
+                "@\x1B[93;1m+\x1B[m"
+                "\x1B[92mmain\x1B[m"
+                "\x1B[32m+3\x1B[m"
+                "\x1B[32m*\x1B[m"
             ),
             id="ahead-stashed-staged",
         ),
@@ -244,7 +244,7 @@ from jwodder_ps1.style import ANSIStyler
                     progress=None,
                 ),
             ),
-            "@\x1B[92mmain\x1B[0m\x1B[31;1m!\x1B[0m",
+            "@\x1B[92mmain\x1B[m\x1B[31;1m!\x1B[m",
             id="conflict",
         ),
         pytest.param(
@@ -264,7 +264,7 @@ from jwodder_ps1.style import ANSIStyler
                     progress=None,
                 ),
             ),
-            "@\x1B[92mmain\x1B[0m\x1B[35m[REBAS]\x1B[0m",
+            "@\x1B[92mmain\x1B[m\x1B[35m[REBAS]\x1B[m",
             id="rebasing",
         ),
         pytest.param(
@@ -285,14 +285,14 @@ from jwodder_ps1.style import ANSIStyler
                 ),
             ),
             (
-                "@\x1B[93;1m+\x1B[0m"
-                "\x1B[92mmain\x1B[0m"
-                "\x1B[32m+3\x1B[0m,"
-                "\x1B[31m-1\x1B[0m"
-                "\x1B[93;1m*\x1B[0m"
-                "\x1B[31;1m+\x1B[0m"
-                "\x1B[35m[CHYPK]\x1B[0m"
-                "\x1B[31;1m!\x1B[0m"
+                "@\x1B[93;1m+\x1B[m"
+                "\x1B[92mmain\x1B[m"
+                "\x1B[32m+3\x1B[m,"
+                "\x1B[31m-1\x1B[m"
+                "\x1B[93;1m*\x1B[m"
+                "\x1B[31;1m+\x1B[m"
+                "\x1B[35m[CHYPK]\x1B[m"
+                "\x1B[31;1m!\x1B[m"
             ),
             id="everything",
         ),
