@@ -102,15 +102,27 @@ Options
 -------
 
 --ansi          Format output for direct display
+
 --bash          Format output for use in Bash's ``PS1`` (default)
+
 -G, --git-only  Only output the Git status string (including leading
                 separator); output an empty line if not in a Git repository or
                 if "off" is given on the command line
+
 --git-timeout SECONDS
                 If running ``git status`` takes longer than the given number of
                 seconds (default: 3), disable the Git integration
+
+-T THEME, --theme THEME
+                Select the theme to use for coloring prompt elements.  The
+                available themes are ``dark`` (the default, for use with light
+                text on dark backgrounds) and ``light`` (for use with dark text
+                on light backgrounds).
+
 --zsh           Format output for use in zsh's ``PS1``
+
 -V, --version   Display version information and exit
+
 -h, --help      Display usage information and exit
 
 

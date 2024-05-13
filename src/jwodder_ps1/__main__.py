@@ -3,7 +3,7 @@ import argparse
 from . import __url__, __version__
 from .git import git_status
 from .info import PromptInfo
-from .styles import DARK_THEME, ANSIStyler, BashStyler, Painter, ZshStyler
+from .styles import THEMES, ANSIStyler, BashStyler, Painter, ZshStyler
 
 
 def main() -> None:
@@ -44,6 +44,13 @@ def main() -> None:
         ),
     )
     parser.add_argument(
+        "-T",
+        "--theme",
+        choices=list(THEMES.keys()),
+        default="dark",
+        help="Select the color theme to use  [default: dark]",
+    )
+    parser.add_argument(
         "--zsh",
         action="store_const",
         dest="stylecls",
@@ -62,7 +69,7 @@ def main() -> None:
     args = parser.parse_args()
     show_git = args.git_flag != "off"
     styler = (args.stylecls or BashStyler)()
-    paint = Painter(styler=styler, theme=DARK_THEME)
+    paint = Painter(styler=styler, theme=THEMES[args.theme])
     if args.git_only:
         if show_git and (gs := git_status(timeout=args.git_timeout)):
             s = gs.display(paint)
