@@ -44,6 +44,11 @@ def main() -> None:
         ),
     )
     parser.add_argument(
+        "--no-hostname",
+        action="store_true",
+        help="Do not show the local hostname",
+    )
+    parser.add_argument(
         "-T",
         "--theme",
         choices=list(THEMES.keys()),
@@ -76,7 +81,9 @@ def main() -> None:
         else:
             s = ""
     else:
-        s = PromptInfo.get(git=show_git, git_timeout=args.git_timeout).display(paint)
+        s = PromptInfo.get(git=show_git, git_timeout=args.git_timeout).display(
+            paint, hostname=not args.no_hostname
+        )
     print(s)
 
 

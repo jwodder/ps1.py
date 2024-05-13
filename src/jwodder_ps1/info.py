@@ -95,7 +95,7 @@ class PromptInfo:
             git=gs,
         )
 
-    def display(self, paint: Painter) -> str:
+    def display(self, paint: Painter, hostname: bool = True) -> str:
         """
         Construct & return a complete prompt string for the current environment
         """
@@ -121,11 +121,11 @@ class PromptInfo:
         if self.venv_prompt is not None:
             ps1 += paint(f"({self.venv_prompt}) ", SC.VENV)
 
-        # Show the current hostname:
-        ps1 += paint(self.hostname, SC.HOST)
-
-        # Separator:
-        ps1 += ":"
+        if hostname:
+            # Show the current hostname:
+            ps1 += paint(self.hostname, SC.HOST)
+            # Separator:
+            ps1 += ":"
 
         # Show the path to the current working directory:
         ps1 += paint(self.cwdstr, SC.CWD)

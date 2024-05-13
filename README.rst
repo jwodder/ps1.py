@@ -113,6 +113,8 @@ Options
                 If running ``git status`` takes longer than the given number of
                 seconds (default: 3), disable the Git integration
 
+--no-hostname   Do not include the local hostname in the prompt string
+
 -T THEME, --theme THEME
                 Select the theme to use for coloring prompt elements.  The
                 available themes are ``dark`` (the default, for use with light
