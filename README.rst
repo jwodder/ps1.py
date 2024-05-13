@@ -44,7 +44,7 @@ Features:
 Installation & Setup
 ====================
 
-``jwodder-ps1`` requires Python 3.8 or higher.  You'll also need a Bash or zsh
+``jwodder-ps1`` requires Python 3.9 or higher.  You'll also need a Bash or zsh
 shell to set the program up in, and you'll need ``git`` v1.7.10+ installed in
 order to get status information about Git repositories.
 

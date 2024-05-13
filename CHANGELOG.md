@@ -1,6 +1,7 @@
 v0.7.0 (in development)
 -----------------------
 - The branch name/`HEAD` description is now truncated if it gets too long.
+- Drop support for Python 3.8
 
 v0.6.0 (2024-05-12)
 -------------------
