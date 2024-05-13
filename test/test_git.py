@@ -1,7 +1,7 @@
 from __future__ import annotations
 import pytest
 from jwodder_ps1.git import GitState, GitStatus, WorkTreeStatus
-from jwodder_ps1.style import ANSIStyler
+from jwodder_ps1.styles import DARK_THEME, ANSIStyler, Painter
 
 
 @pytest.mark.parametrize(
@@ -277,4 +277,5 @@ from jwodder_ps1.style import ANSIStyler
     ],
 )
 def test_display_git_status_ansi(gs: GitStatus, rendered: str) -> None:
-    assert gs.display(ANSIStyler()) == rendered
+    paint = Painter(ANSIStyler(), DARK_THEME)
+    assert gs.display(paint) == rendered

@@ -3,7 +3,7 @@ import argparse
 from . import __url__, __version__
 from .git import git_status
 from .info import PromptInfo
-from .style import ANSIStyler, BashStyler, ZshStyler
+from .styles import DARK_THEME, ANSIStyler, BashStyler, Painter, ZshStyler
 
 
 def main() -> None:
@@ -61,15 +61,15 @@ def main() -> None:
     )
     args = parser.parse_args()
     show_git = args.git_flag != "off"
-    # Stylizing & escaping callable:
-    style = (args.stylecls or BashStyler)()
+    styler = (args.stylecls or BashStyler)()
+    paint = Painter(styler=styler, theme=DARK_THEME)
     if args.git_only:
         if show_git and (gs := git_status(timeout=args.git_timeout)):
-            s = gs.display(style)
+            s = gs.display(paint)
         else:
             s = ""
     else:
-        s = PromptInfo.get(git=show_git, git_timeout=args.git_timeout).display(style)
+        s = PromptInfo.get(git=show_git, git_timeout=args.git_timeout).display(paint)
     print(s)
 
 
