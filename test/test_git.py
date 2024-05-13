@@ -1,7 +1,7 @@
 from __future__ import annotations
 import pytest
 from jwodder_ps1.git import GitState, GitStatus, WorkTreeStatus
-from jwodder_ps1.styles import DARK_THEME, ANSIStyler, Painter
+from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
 
 
 @pytest.mark.parametrize(
@@ -279,3 +279,43 @@ from jwodder_ps1.styles import DARK_THEME, ANSIStyler, Painter
 def test_display_git_status_ansi(gs: GitStatus, rendered: str) -> None:
     paint = Painter(ANSIStyler(), DARK_THEME)
     assert gs.display(paint) == rendered
+
+
+def test_display_git_status_ansi_light() -> None:
+    gs = GitStatus(
+        head="main",
+        detached=False,
+        ahead=3,
+        behind=1,
+        wkt=WorkTreeStatus(
+            stashed=True,
+            staged=True,
+            unstaged=True,
+            untracked=True,
+            conflict=True,
+            state=GitState.CHERRY_PICKING,
+        ),
+    )
+    paint = Painter(ANSIStyler(), LIGHT_THEME)
+    assert gs.display(paint) == (
+        "@\x1B[93;1m+\x1B[m"
+        "\x1B[32mmain\x1B[m"
+        "\x1B[32m+3\x1B[m,"
+        "\x1B[31m-1\x1B[m"
+        "\x1B[93;1m*\x1B[m"
+        "\x1B[31;1m+\x1B[m"
+        "\x1B[35m[CHYPK]\x1B[m"
+        "\x1B[31;1m!\x1B[m"
+    )
+
+
+def test_display_detached_git_status_ansi_light() -> None:
+    gs = GitStatus(
+        head="v0.1.0",
+        detached=True,
+        ahead=None,
+        behind=None,
+        wkt=None,
+    )
+    paint = Painter(ANSIStyler(), LIGHT_THEME)
+    assert gs.display(paint) == "@\x1B[34mv0.1.0\x1B[m"
