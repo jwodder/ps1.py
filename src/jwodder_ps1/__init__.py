@@ -12,7 +12,6 @@ Features:
   <https://conda.io>`_ environment prompt prefixes
 - Automatically truncates the current directory path if it gets too long
 - Shows the status of the current Git repository
-- Thoroughly documented and easily customizable
 - Supports both Bash and zsh
 - Can optionally output just the Git status, in case you want to combine it
   with your own prompt string
@@ -20,7 +19,7 @@ Features:
 Visit <https://github.com/jwodder/ps1.py> for more information.
 """
 
-__version__ = "0.6.0"
+__version__ = "0.7.0.dev1"
 __author__ = "John Thorvald Wodder II"
 __author_email__ = "ps1@varonathe.org"
 __license__ = "MIT"

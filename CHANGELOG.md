@@ -1,3 +1,7 @@
+v0.7.0 (in development)
+-----------------------
+- The branch name/`HEAD` description is now truncated if it gets too long.
+
 v0.6.0 (2024-05-12)
 -------------------
 - Always open text files in UTF-8

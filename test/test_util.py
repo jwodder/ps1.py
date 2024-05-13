@@ -1,6 +1,7 @@
 from __future__ import annotations
 from pathlib import PurePosixPath
 import pytest
+from jwodder_ps1.git import shorthead
 from jwodder_ps1.info import shortpath
 
 
@@ -23,3 +24,16 @@ from jwodder_ps1.info import shortpath
 )
 def test_shortpath(path: str, short: str) -> None:
     assert shortpath(PurePosixPath(path)) == short
+
+
+@pytest.mark.parametrize(
+    "head,short",
+    [
+        ("main", "main"),
+        ("feature/foo-bar", "feature/foo-bar"),
+        ("feature/foo-quux", "feature/foo-qu…"),
+        ("feature/foo-bar-quux", "feature/foo-ba…"),
+    ],
+)
+def test_shorthead(head: str, short: str) -> None:
+    assert shorthead(head) == short
