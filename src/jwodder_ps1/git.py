@@ -6,6 +6,9 @@ import re
 import subprocess
 from .style import Color, Styler
 
+#: Default maximum display length of the repository HEAD
+MAX_HEAD_LEN = 15
+
 
 @dataclass
 class GitStatus:
@@ -37,7 +40,7 @@ class GitStatus:
             p += style("+", fg=Color.LIGHT_YELLOW, bold=True)
         # Show HEAD; color changes depending on whether it's detached:
         head_color = Color.LIGHT_BLUE if self.detached else Color.LIGHT_GREEN
-        p += style(self.head, fg=head_color)
+        p += style(shorthead(self.head), fg=head_color)
         if self.ahead:
             # Show commits ahead of upstream:
             p += style(f"+{self.ahead}", fg=Color.GREEN)
@@ -282,3 +285,10 @@ def git(*args: str) -> str | None:
         ).stdout.strip()
     except subprocess.CalledProcessError:
         return None
+
+
+def shorthead(head: str, max_len: int = MAX_HEAD_LEN) -> str:
+    if len(head) > max_len:
+        return head[: max_len - 1] + "…"
+    else:
+        return head

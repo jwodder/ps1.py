@@ -128,6 +128,9 @@ relevant.  From left to right, the symbols are:
   any), or the name of the currently checked-out tag (if any), or the short
   form of the current commit hash; turns light blue when the repository is in
   detached ``HEAD`` state
+
+  This string is truncated if it gets too long.
+
 - ``+n`` (green) — how many commits ``HEAD`` is ahead of upstream
 - ``-n`` (red) — how many commits ``HEAD`` is behind upstream
 - ``*`` — Indicates whether there are any staged or unstaged changes in the
