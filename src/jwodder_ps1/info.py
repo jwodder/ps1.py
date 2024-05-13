@@ -6,7 +6,8 @@ from pathlib import Path, PurePath
 import re
 import socket
 from .git import GitStatus, git_status
-from .style import Color, Styler
+from .styles import Painter
+from .styles import StyleClass as SC
 
 #: Default maximum display length of the path to the current working directory
 MAX_CWD_LEN = 30
@@ -94,7 +95,7 @@ class PromptInfo:
             git=gs,
         )
 
-    def display(self, style: Styler) -> str:
+    def display(self, paint: Painter) -> str:
         """
         Construct & return a complete prompt string for the current environment
         """
@@ -104,37 +105,37 @@ class PromptInfo:
 
         # If the $MAIL file is nonempty, show the string "[MAIL]":
         if self.mail:
-            ps1 += style("[MAIL] ", fg=Color.CYAN, bold=True)
+            ps1 += paint("[MAIL] ", SC.MAIL)
 
         # Show the chroot we're working in (if any):
         if self.debian_chroot is not None:
-            ps1 += style(f"[{self.debian_chroot}] ", fg=Color.BLUE, bold=True)
+            ps1 += paint(f"[{self.debian_chroot}] ", SC.CHROOT)
 
         # If a Conda environment is active, show its prompt prefix:
         if self.conda_prompt_modifier is not None:
             # Green like a snake!
-            ps1 += style(self.conda_prompt_modifier, fg=Color.LIGHT_GREEN)
+            ps1 += paint(self.conda_prompt_modifier, SC.CONDA)
 
         # If we're inside a Python virtualenv, show the basename of the
         # virtualenv directory (or the custom prompt prefix, if set).
         if self.venv_prompt is not None:
-            ps1 += style(f"({self.venv_prompt}) ")
+            ps1 += paint(f"({self.venv_prompt}) ", SC.VENV)
 
         # Show the current hostname:
-        ps1 += style(self.hostname, fg=Color.LIGHT_RED)
+        ps1 += paint(self.hostname, SC.HOST)
 
         # Separator:
-        ps1 += style(":")
+        ps1 += ":"
 
         # Show the path to the current working directory:
-        ps1 += style(self.cwdstr, fg=Color.LIGHT_CYAN)
+        ps1 += paint(self.cwdstr, SC.CWD)
 
         # Show Git status information, if any:
         if self.git is not None:
-            ps1 += self.git.display(style)
+            ps1 += self.git.display(paint)
 
         # The actual prompt symbol at the end of the prompt:
-        ps1 += style.prompt_suffix + " "
+        ps1 += paint.styler.prompt_suffix + " "
 
         return ps1
 
