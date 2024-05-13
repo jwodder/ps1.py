@@ -107,3 +107,17 @@ def test_display_full_git_prompt_info_ansi_light() -> None:
         "\x1B[34m~/work\x1B[m"
         "@\x1B[32mmain\x1B[m$ "
     )
+
+
+def test_display_prompt_info_ansi_no_hostname() -> None:
+    info = PromptInfo(
+        mail=False,
+        debian_chroot=None,
+        conda_prompt_modifier=None,
+        venv_prompt=None,
+        hostname="firefly",
+        cwdstr="~/work",
+        git=None,
+    )
+    paint = Painter(ANSIStyler(), DARK_THEME)
+    assert info.display(paint, hostname=False) == "\x1B[96m~/work\x1B[m$ "
