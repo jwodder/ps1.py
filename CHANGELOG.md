@@ -1,5 +1,5 @@
-v0.7.0 (in development)
------------------------
+v0.7.0 (2024-05-13)
+-------------------
 - The branch name/`HEAD` description is now truncated if it gets too long.
 - Add `--theme` option for selecting between dark and light themes
 - Add `--no-hostname` option
