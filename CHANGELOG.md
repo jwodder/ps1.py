@@ -1,5 +1,5 @@
-v0.7.1 (in development)
------------------------
+v0.7.1 (2024-05-23)
+-------------------
 - Fixed support for custom venv prompt prefixes
 
 v0.7.0 (2024-05-13)
