@@ -65,11 +65,11 @@ class PromptInfo:
                     for line in fp:
                         line = line.strip()
                         if m := re.match(r"^prompt\s*=\s*", line):
-                            prompt = line[m.end() :]
-                            if re.fullmatch(r'([\x27"]).*\1', prompt):
+                            venv_prompt = line[m.end() :]
+                            if re.fullmatch(r'([\x27"]).*\1', venv_prompt):
                                 # repr-ized prompt produced by venv
                                 try:
-                                    venv_prompt = literal_eval(prompt)
+                                    venv_prompt = literal_eval(venv_prompt)
                                 except Exception:
                                     pass
                             break

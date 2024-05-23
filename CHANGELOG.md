@@ -1,3 +1,7 @@
+v0.7.1 (in development)
+-----------------------
+- Fixed support for custom venv prompt prefixes
+
 v0.7.0 (2024-05-13)
 -------------------
 - The branch name/`HEAD` description is now truncated if it gets too long.
