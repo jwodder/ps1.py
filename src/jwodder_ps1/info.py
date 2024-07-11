@@ -42,8 +42,7 @@ class PromptInfo:
     @classmethod
     def get(cls, git: bool = True, git_timeout: float = 3) -> PromptInfo:
         try:
-            if os.stat(os.environ["MAIL"]).st_size > 0:
-                mail = True
+            mail = os.stat(os.environ["MAIL"]).st_size > 0
         except (KeyError, FileNotFoundError):
             mail = False
 

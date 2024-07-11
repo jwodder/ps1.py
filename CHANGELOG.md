@@ -1,3 +1,7 @@
+v0.7.2 (in development)
+-----------------------
+- Fix crash when `$MAIL` is set but file is empty
+
 v0.7.1 (2024-05-23)
 -------------------
 - Fixed support for custom venv prompt prefixes

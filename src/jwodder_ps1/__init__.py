@@ -19,7 +19,7 @@ Features:
 Visit <https://github.com/jwodder/ps1.py> for more information.
 """
 
-__version__ = "0.7.1"
+__version__ = "0.7.2.dev1"
 __author__ = "John Thorvald Wodder II"
 __author_email__ = "ps1@varonathe.org"
 __license__ = "MIT"
