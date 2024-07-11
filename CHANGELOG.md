@@ -1,5 +1,5 @@
-v0.7.2 (in development)
------------------------
+v0.7.2 (2024-07-11)
+-------------------
 - Fix crash when `$MAIL` is set but file is empty
 
 v0.7.1 (2024-05-23)
