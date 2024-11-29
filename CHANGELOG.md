@@ -1,3 +1,7 @@
+v0.8.0 (in development)
+-----------------------
+- Support Python 3.13
+
 v0.7.2 (2024-07-11)
 -------------------
 - Fix crash when `$MAIL` is set but file is empty
