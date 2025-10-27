@@ -102,7 +102,7 @@ class ANSIStyler:
         :param Style style: the color & weight to stylize the string with
         """
         if params := style.as_params():
-            s = f"\x1B[{';'.join(params)}m{s}\x1B[m"
+            s = f"\x1b[{';'.join(params)}m{s}\x1b[m"
         return s
 
 

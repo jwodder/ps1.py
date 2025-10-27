@@ -15,7 +15,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                 behind=None,
                 wkt=None,
             ),
-            "@\x1B[92mmain\x1B[m",
+            "@\x1b[92mmain\x1b[m",
             id="simple-bare",
         ),
         pytest.param(
@@ -26,7 +26,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                 behind=None,
                 wkt=None,
             ),
-            "@\x1B[94mv0.1.0\x1B[m",
+            "@\x1b[94mv0.1.0\x1b[m",
             id="detached-bare",
         ),
         pytest.param(
@@ -37,7 +37,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                 behind=None,
                 wkt=None,
             ),
-            "@\x1B[92mmain\x1B[m\x1B[32m+1\x1B[m",
+            "@\x1b[92mmain\x1b[m\x1b[32m+1\x1b[m",
             id="ahead-bare",
         ),
         pytest.param(
@@ -48,7 +48,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                 behind=2,
                 wkt=None,
             ),
-            "@\x1B[92mmain\x1B[m\x1B[31m-2\x1B[m",
+            "@\x1b[92mmain\x1b[m\x1b[31m-2\x1b[m",
             id="behind-bare",
         ),
         pytest.param(
@@ -59,7 +59,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                 behind=2,
                 wkt=None,
             ),
-            "@\x1B[92mmain\x1B[m\x1B[32m+1\x1B[m,\x1B[31m-2\x1B[m",
+            "@\x1b[92mmain\x1b[m\x1b[32m+1\x1b[m,\x1b[31m-2\x1b[m",
             id="ahead-behind-bare",
         ),
         pytest.param(
@@ -77,7 +77,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                     state=None,
                 ),
             ),
-            "@\x1B[92mmain\x1B[m",
+            "@\x1b[92mmain\x1b[m",
             id="simple",
         ),
         pytest.param(
@@ -95,7 +95,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                     state=None,
                 ),
             ),
-            "@\x1B[92mmain\x1B[m\x1B[32m*\x1B[m",
+            "@\x1b[92mmain\x1b[m\x1b[32m*\x1b[m",
             id="staged",
         ),
         pytest.param(
@@ -113,7 +113,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                     state=None,
                 ),
             ),
-            "@\x1B[92mmain\x1B[m\x1B[31m*\x1B[m",
+            "@\x1b[92mmain\x1b[m\x1b[31m*\x1b[m",
             id="unstaged",
         ),
         pytest.param(
@@ -131,7 +131,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                     state=None,
                 ),
             ),
-            "@\x1B[92mmain\x1B[m\x1B[93;1m*\x1B[m",
+            "@\x1b[92mmain\x1b[m\x1b[93;1m*\x1b[m",
             id="staged-unstaged",
         ),
         pytest.param(
@@ -149,7 +149,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                     state=None,
                 ),
             ),
-            "@\x1B[93;1m+\x1B[m\x1B[92mmain\x1B[m",
+            "@\x1b[93;1m+\x1b[m\x1b[92mmain\x1b[m",
             id="stashed",
         ),
         pytest.param(
@@ -167,7 +167,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                     state=None,
                 ),
             ),
-            "@\x1B[92mmain\x1B[m\x1B[31;1m+\x1B[m",
+            "@\x1b[92mmain\x1b[m\x1b[31;1m+\x1b[m",
             id="untracked",
         ),
         pytest.param(
@@ -185,7 +185,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                     state=None,
                 ),
             ),
-            "@\x1B[93;1m+\x1B[m\x1B[92mmain\x1B[m\x1B[31m*\x1B[m\x1B[31;1m+\x1B[m",
+            "@\x1b[93;1m+\x1b[m\x1b[92mmain\x1b[m\x1b[31m*\x1b[m\x1b[31;1m+\x1b[m",
             id="stashed-unstaged-untracked",
         ),
         pytest.param(
@@ -204,10 +204,10 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                 ),
             ),
             (
-                "@\x1B[93;1m+\x1B[m"
-                "\x1B[92mmain\x1B[m"
-                "\x1B[32m+3\x1B[m"
-                "\x1B[32m*\x1B[m"
+                "@\x1b[93;1m+\x1b[m"
+                "\x1b[92mmain\x1b[m"
+                "\x1b[32m+3\x1b[m"
+                "\x1b[32m*\x1b[m"
             ),
             id="ahead-stashed-staged",
         ),
@@ -226,7 +226,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                     state=None,
                 ),
             ),
-            "@\x1B[92mmain\x1B[m\x1B[31;1m!\x1B[m",
+            "@\x1b[92mmain\x1b[m\x1b[31;1m!\x1b[m",
             id="conflict",
         ),
         pytest.param(
@@ -244,7 +244,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                     state=GitState.REBASE_MERGING,
                 ),
             ),
-            "@\x1B[92mmain\x1B[m\x1B[35m[REBAS]\x1B[m",
+            "@\x1b[92mmain\x1b[m\x1b[35m[REBAS]\x1b[m",
             id="rebasing",
         ),
         pytest.param(
@@ -263,14 +263,14 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                 ),
             ),
             (
-                "@\x1B[93;1m+\x1B[m"
-                "\x1B[92mmain\x1B[m"
-                "\x1B[32m+3\x1B[m,"
-                "\x1B[31m-1\x1B[m"
-                "\x1B[93;1m*\x1B[m"
-                "\x1B[31;1m+\x1B[m"
-                "\x1B[35m[CHYPK]\x1B[m"
-                "\x1B[31;1m!\x1B[m"
+                "@\x1b[93;1m+\x1b[m"
+                "\x1b[92mmain\x1b[m"
+                "\x1b[32m+3\x1b[m,"
+                "\x1b[31m-1\x1b[m"
+                "\x1b[93;1m*\x1b[m"
+                "\x1b[31;1m+\x1b[m"
+                "\x1b[35m[CHYPK]\x1b[m"
+                "\x1b[31;1m!\x1b[m"
             ),
             id="everything",
         ),
@@ -298,14 +298,14 @@ def test_display_git_status_ansi_light() -> None:
     )
     paint = Painter(ANSIStyler(), LIGHT_THEME)
     assert gs.display(paint) == (
-        "@\x1B[93;1m+\x1B[m"
-        "\x1B[32mmain\x1B[m"
-        "\x1B[32m+3\x1B[m,"
-        "\x1B[31m-1\x1B[m"
-        "\x1B[93;1m*\x1B[m"
-        "\x1B[31;1m+\x1B[m"
-        "\x1B[35m[CHYPK]\x1B[m"
-        "\x1B[31;1m!\x1B[m"
+        "@\x1b[93;1m+\x1b[m"
+        "\x1b[32mmain\x1b[m"
+        "\x1b[32m+3\x1b[m,"
+        "\x1b[31m-1\x1b[m"
+        "\x1b[93;1m*\x1b[m"
+        "\x1b[31;1m+\x1b[m"
+        "\x1b[35m[CHYPK]\x1b[m"
+        "\x1b[31;1m!\x1b[m"
     )
 
 
@@ -318,4 +318,4 @@ def test_display_detached_git_status_ansi_light() -> None:
         wkt=None,
     )
     paint = Painter(ANSIStyler(), LIGHT_THEME)
-    assert gs.display(paint) == "@\x1B[34mv0.1.0\x1B[m"
+    assert gs.display(paint) == "@\x1b[34mv0.1.0\x1b[m"

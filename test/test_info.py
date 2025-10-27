@@ -18,7 +18,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                 cwdstr="~/work",
                 git=None,
             ),
-            "\x1B[91mfirefly\x1B[m:\x1B[96m~/work\x1B[m$ ",
+            "\x1b[91mfirefly\x1b[m:\x1b[96m~/work\x1b[m$ ",
             id="simple",
         ),
         pytest.param(
@@ -32,12 +32,12 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                 git=None,
             ),
             (
-                "\x1B[36;1m[MAIL] \x1B[m"
-                "\x1B[34;1m[/chroot/jail] \x1B[m"
-                "\x1B[92m(base) \x1B[m"
+                "\x1b[36;1m[MAIL] \x1b[m"
+                "\x1b[34;1m[/chroot/jail] \x1b[m"
+                "\x1b[92m(base) \x1b[m"
                 "(venv) "
-                "\x1B[91mfirefly\x1B[m:"
-                "\x1B[96m~/work\x1B[m$ "
+                "\x1b[91mfirefly\x1b[m:"
+                "\x1b[96m~/work\x1b[m$ "
             ),
             id="full",
         ),
@@ -64,7 +64,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                     ),
                 ),
             ),
-            "\x1B[91mfirefly\x1B[m:\x1B[96m~/work\x1B[m@\x1B[92mmain\x1B[m$ ",
+            "\x1b[91mfirefly\x1b[m:\x1b[96m~/work\x1b[m@\x1b[92mmain\x1b[m$ ",
             id="simple-git",
         ),
     ],
@@ -99,13 +99,13 @@ def test_display_full_git_prompt_info_ansi_light() -> None:
     )
     paint = Painter(ANSIStyler(), LIGHT_THEME)
     assert info.display(paint) == (
-        "\x1B[36;1m[MAIL] \x1B[m"
-        "\x1B[34;1m[/chroot/jail] \x1B[m"
-        "\x1B[32m(base) \x1B[m"
+        "\x1b[36;1m[MAIL] \x1b[m"
+        "\x1b[34;1m[/chroot/jail] \x1b[m"
+        "\x1b[32m(base) \x1b[m"
         "(venv) "
-        "\x1B[91mfirefly\x1B[m:"
-        "\x1B[34m~/work\x1B[m"
-        "@\x1B[32mmain\x1B[m$ "
+        "\x1b[91mfirefly\x1b[m:"
+        "\x1b[34m~/work\x1b[m"
+        "@\x1b[32mmain\x1b[m$ "
     )
 
 
@@ -120,4 +120,4 @@ def test_display_prompt_info_ansi_no_hostname() -> None:
         git=None,
     )
     paint = Painter(ANSIStyler(), DARK_THEME)
-    assert info.display(paint, hostname=False) == "\x1B[96m~/work\x1B[m$ "
+    assert info.display(paint, hostname=False) == "\x1b[96m~/work\x1b[m$ "
