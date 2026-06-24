@@ -121,6 +121,8 @@ Options
                 text on dark backgrounds) and ``light`` (for use with dark text
                 on light backgrounds).
 
+--username      Include the user's login name in the prompt string
+
 --zsh           Format output for use in zsh's ``PS1``
 
 -V, --version   Display version information and exit

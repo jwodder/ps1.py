@@ -56,6 +56,9 @@ def main() -> None:
         help="Select the color theme to use  [default: dark]",
     )
     parser.add_argument(
+        "--username", action="store_true", help="Show user's login name"
+    )
+    parser.add_argument(
         "--zsh",
         action="store_const",
         dest="stylecls",
@@ -82,7 +85,9 @@ def main() -> None:
             s = ""
     else:
         s = PromptInfo.get(git=show_git, git_timeout=args.git_timeout).display(
-            paint, hostname=not args.no_hostname
+            paint,
+            hostname=not args.no_hostname,
+            username=args.username,
         )
     print(s)
 

@@ -142,6 +142,7 @@ StyleClass = Enum(
         "CHROOT",
         "CONDA",
         "VENV",
+        "USER",
         "HOST",
         "CWD",
         "GIT_STASHED",
@@ -165,6 +166,7 @@ DARK_THEME = {
     StyleClass.CHROOT: Style(Color.BLUE, bold=True),
     StyleClass.CONDA: Style(Color.LIGHT_GREEN),
     StyleClass.VENV: Style(),
+    StyleClass.USER: Style(Color.LIGHT_GREEN),
     StyleClass.HOST: Style(Color.LIGHT_RED),
     StyleClass.CWD: Style(Color.LIGHT_CYAN),
     StyleClass.GIT_STASHED: Style(Color.LIGHT_YELLOW, bold=True),
@@ -182,6 +184,7 @@ DARK_THEME = {
 
 LIGHT_THEME = DARK_THEME | {
     StyleClass.CONDA: Style(Color.GREEN),
+    StyleClass.USER: Style(Color.GREEN),
     StyleClass.CWD: Style(Color.BLUE),
     StyleClass.GIT_HEAD: Style(Color.GREEN),
     StyleClass.GIT_DETACHED: Style(Color.BLUE),

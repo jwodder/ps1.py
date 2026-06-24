@@ -1,6 +1,7 @@
 from __future__ import annotations
 from ast import literal_eval
 from dataclasses import dataclass
+import getpass
 import os
 from pathlib import Path, PurePath
 import re
@@ -30,6 +31,7 @@ class PromptInfo:
     #: directory
     venv_prompt: str | None
 
+    username: str
     hostname: str
 
     #: The path to the current working directory.  If the directory is at or
@@ -77,6 +79,7 @@ class PromptInfo:
         else:
             venv_prompt = None
 
+        username = getpass.getuser()
         hostname = socket.gethostname()
 
         if git:
@@ -89,12 +92,15 @@ class PromptInfo:
             debian_chroot=debian_chroot,
             conda_prompt_modifier=conda_prompt_modifier,
             venv_prompt=venv_prompt,
+            username=username,
             hostname=hostname,
             cwdstr=cwdstr(),
             git=gs,
         )
 
-    def display(self, paint: Painter, hostname: bool = True) -> str:
+    def display(
+        self, paint: Painter, hostname: bool = True, username: bool = False
+    ) -> str:
         """
         Construct & return a complete prompt string for the current environment
         """
@@ -119,6 +125,15 @@ class PromptInfo:
         # virtualenv directory (or the custom prompt prefix, if set).
         if self.venv_prompt is not None:
             ps1 += paint(f"({self.venv_prompt}) ", SC.VENV)
+
+        if username:
+            # Show our username:
+            ps1 += paint(self.username, SC.USER)
+            # Separator:
+            if hostname:
+                ps1 += "@"
+            else:
+                ps1 += ":"
 
         if hostname:
             # Show the current hostname:
