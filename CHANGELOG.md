@@ -1,5 +1,5 @@
-v0.8.0 (in development)
------------------------
+v0.8.0 (2026-06-24)
+-------------------
 - Support Python 3.13 and 3.14
 - Drop support for Python 3.9
 - Add `--username` option
