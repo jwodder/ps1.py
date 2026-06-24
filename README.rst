@@ -22,6 +22,7 @@
 `GitHub <https://github.com/jwodder/ps1.py>`_
 | `PyPI <https://pypi.org/project/jwodder-ps1/>`_
 | `Issues <https://github.com/jwodder/ps1.py/issues>`_
+| `Changelog <https://github.com/jwodder/ps1.py/blob/master/CHANGELOG.md>`_
 
 ``jwodder-ps1`` is yet another program for Git-aware customization of the
 command prompt in Bash and zsh.  Unlike all the others, I wrote this one, so
