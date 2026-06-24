@@ -14,6 +14,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                 debian_chroot=None,
                 conda_prompt_modifier=None,
                 venv_prompt=None,
+                username="luser",
                 hostname="firefly",
                 cwdstr="~/work",
                 git=None,
@@ -27,6 +28,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                 debian_chroot="/chroot/jail",
                 conda_prompt_modifier="(base) ",
                 venv_prompt="venv",
+                username="luser",
                 hostname="firefly",
                 cwdstr="~/work",
                 git=None,
@@ -47,6 +49,7 @@ from jwodder_ps1.styles import DARK_THEME, LIGHT_THEME, ANSIStyler, Painter
                 debian_chroot=None,
                 conda_prompt_modifier=None,
                 venv_prompt=None,
+                username="luser",
                 hostname="firefly",
                 cwdstr="~/work",
                 git=GitStatus(
@@ -80,6 +83,7 @@ def test_display_full_git_prompt_info_ansi_light() -> None:
         debian_chroot="/chroot/jail",
         conda_prompt_modifier="(base) ",
         venv_prompt="venv",
+        username="luser",
         hostname="firefly",
         cwdstr="~/work",
         git=GitStatus(
@@ -115,9 +119,46 @@ def test_display_prompt_info_ansi_no_hostname() -> None:
         debian_chroot=None,
         conda_prompt_modifier=None,
         venv_prompt=None,
+        username="luser",
         hostname="firefly",
         cwdstr="~/work",
         git=None,
     )
     paint = Painter(ANSIStyler(), DARK_THEME)
     assert info.display(paint, hostname=False) == "\x1b[96m~/work\x1b[m$ "
+
+
+def test_display_prompt_info_ansi_username() -> None:
+    info = PromptInfo(
+        mail=False,
+        debian_chroot=None,
+        conda_prompt_modifier=None,
+        venv_prompt=None,
+        username="luser",
+        hostname="firefly",
+        cwdstr="~/work",
+        git=None,
+    )
+    paint = Painter(ANSIStyler(), DARK_THEME)
+    assert (
+        info.display(paint, username=True)
+        == "\x1b[92mluser\x1b[m@\x1b[91mfirefly\x1b[m:\x1b[96m~/work\x1b[m$ "
+    )
+
+
+def test_display_prompt_info_ansi_username_no_hostname() -> None:
+    info = PromptInfo(
+        mail=False,
+        debian_chroot=None,
+        conda_prompt_modifier=None,
+        venv_prompt=None,
+        username="luser",
+        hostname="firefly",
+        cwdstr="~/work",
+        git=None,
+    )
+    paint = Painter(ANSIStyler(), DARK_THEME)
+    assert (
+        info.display(paint, hostname=False, username=True)
+        == "\x1b[92mluser\x1b[m:\x1b[96m~/work\x1b[m$ "
+    )

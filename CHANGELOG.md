@@ -2,6 +2,7 @@ v0.8.0 (in development)
 -----------------------
 - Support Python 3.13 and 3.14
 - Drop support for Python 3.9
+- Add `--username` option
 
 v0.7.2 (2024-07-11)
 -------------------
